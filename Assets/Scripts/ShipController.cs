@@ -7,11 +7,11 @@ public class ShipController : MonoBehaviour
     public Transform earth;
     private Transform rocket;
     private Rigidbody2D rocketRB;
-    public float gravitationalconstant = 0.02f;
+    private float gravitationalconstant = 0.01f;
     private float boostPower = 0.8f;
-    public int massEarth = 100;
-    public float startSpeedX = 0;
-    public float startSpeedY = 0;
+    private float massEarth = 200.0f;
+    private float startSpeedX = 0;
+    private float startSpeedY = 0.5f;
     public int massRocket = 1;
     private Vector2 spawndirection;
 
@@ -27,11 +27,12 @@ public class ShipController : MonoBehaviour
 
     public GameObject Booster;
     private bool isTracking = true;
-    public float rotationspeed = 5f;
+    private float rotationspeed = 10f;
 
     public RectTransform Fuelbar;
     private float FuelPercentage = 1.0f;
-    public float FuelConsumptionRate = 0.1f;
+    private float FuelConsumptionRate = -0.05f;
+    private float RefuelingRate = 0.1f;
 
     public GameObject fracturedRocketModel;
     private GameObject rocketModel;
@@ -45,6 +46,8 @@ public class ShipController : MonoBehaviour
     private Transform mainCamera;
     private Camera rocketCamera;
     private float zoomLevel = 5f;
+    private float zoomDamp = 10.0f;
+    private float trackingDamp = 10.0f;
 
     void Start()
     {
@@ -117,7 +120,7 @@ public class ShipController : MonoBehaviour
     {
         Vector3 rocketVelocityVector = new Vector3(rocketRB.velocity.x, rocketRB.velocity.y, 0);
 
-        if (rocketVelocityVector.magnitude < 0.1f || hasCrashed || hasLanded)
+        if (hasCrashed || hasLanded)
         {
             VelocityArrow.SetActive(false);
         }
@@ -146,19 +149,15 @@ public class ShipController : MonoBehaviour
     }
 
     private void UseFuel()
-    {        
-        FuelPercentage -= FuelConsumptionRate * Time.deltaTime;
-        Fuelbar.sizeDelta = new Vector2(FuelPercentage*120f, Fuelbar.sizeDelta.y);
-        FuelPercentage = Mathf.Clamp(FuelPercentage, 0.0f, 1.0f);
+    {
+        FuelChange(FuelConsumptionRate);
     }
 
     private void Refuel()
     {
         if (refueling)
         {
-            FuelPercentage += FuelConsumptionRate * Time.deltaTime;
-            Fuelbar.sizeDelta = new Vector2(FuelPercentage * 120f, Fuelbar.sizeDelta.y);
-            FuelPercentage = Mathf.Clamp(FuelPercentage, 0.0f, 1.0f);
+            FuelChange(RefuelingRate);
         }
     }
 
@@ -204,7 +203,7 @@ public class ShipController : MonoBehaviour
         Vector3 heading = gravitySource.position - gravityTargetObject.position;
         float distance = heading.magnitude;
         Vector3 gravityDirection = heading / distance;
-        float gravityForce = gravitationalconstant * ((gravitySourceMass) / (distance));
+        float gravityForce = gravitationalconstant * gravitySourceMass / distance;
         Vector3 gravityForceVector = (gravityDirection * gravityForce);
 
         targetRigidbody.AddForce(gravityForceVector);
@@ -226,14 +225,14 @@ public class ShipController : MonoBehaviour
         float zoomChangeAmount = 80f;
         if (Input.mouseScrollDelta.y > 0)
         {
-            zoomLevel -= zoomChangeAmount * Time.deltaTime * 0.1f;
+            zoomLevel -= zoomChangeAmount * (1f + zoomLevel / 10f) * (1f + zoomLevel / 10f) * Time.deltaTime * 0.2f;
         }
         if (Input.mouseScrollDelta.y < 0)
         {
-            zoomLevel += zoomChangeAmount * Time.deltaTime * 0.1f;
+            zoomLevel += zoomChangeAmount * (1f + zoomLevel / 10f) * (1f + zoomLevel / 10f) * Time.deltaTime * 0.2f;
         }
-        zoomLevel = Mathf.Clamp(zoomLevel, 1f, 10);
-        rocketCamera.orthographicSize = zoomLevel;
+        zoomLevel = Mathf.Clamp(zoomLevel, 1f, 20f);
+        rocketCamera.orthographicSize = Mathf.Lerp(rocketCamera.orthographicSize, zoomLevel, zoomDamp * Time.deltaTime);
     }
 
     private void Rockettracking()
@@ -243,6 +242,13 @@ public class ShipController : MonoBehaviour
             mainCamera.position = new Vector3(rocket.position.x, rocket.position.y, -10);
         }
 
+    }
+
+    private void FuelChange(float FuelRate)
+    {
+        FuelPercentage += FuelRate * Time.deltaTime;
+        Fuelbar.sizeDelta = new Vector2(FuelPercentage * 120f, Fuelbar.sizeDelta.y);
+        FuelPercentage = Mathf.Clamp(FuelPercentage, 0.0f, 1.0f);
     }
 
     IEnumerator Explosion()
