@@ -11,7 +11,7 @@ public class CollisionDetector : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if ((other.collider.tag == "Planet" || other.collider.tag == "Refuel") && rocketRB.velocity.magnitude < 0.22f)
+        if ((other.collider.tag == "Planet" || other.collider.tag == "Refuel") && rocketRB.velocity.magnitude < 0.25f)
         {
             hasLanded = true;
             if (other.collider.tag == "Refuel")

@@ -9,6 +9,7 @@ TagManager:
   - ShipCollider
   - Planet
   - Refuel
+  - Velocity
   layers:
   - Default
   - TransparentFX

@@ -11,16 +11,21 @@ public class CollisionImpactSound : MonoBehaviour
     private void Start()
     {
         debris = GetComponent<AudioSource>();
-        impactExplosion = transform.GetChild(0).gameObject;
+        if (transform.GetChild(0).gameObject != null)
+        {
+            impactExplosion = transform.GetChild(0).gameObject;
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if (playOnce)
         {
-            playOnce = false;
-            debris.Play();
-            impactExplosion.SetActive(true);
+            if(playOnce && impactExplosion != null)
+            {
+                playOnce = false;
+                debris.Play();
+                impactExplosion.SetActive(true);
+            }
         }
     }
 }

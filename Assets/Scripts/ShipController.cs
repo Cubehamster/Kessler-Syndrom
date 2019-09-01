@@ -4,38 +4,41 @@ using UnityEngine;
 
 public class ShipController : MonoBehaviour
 {
-    public Transform earth;
+    public GameObject rocketPrefab;
+
+    private Transform earth;
     private Transform rocket;
     private Rigidbody2D rocketRB;
-    private float gravitationalconstant = 0.01f;
+
     private float boostPower = 0.8f;
-    private float massEarth = 200.0f;
-    private float startSpeedX = 0;
-    private float startSpeedY = 0.5f;
-    public int massRocket = 1;
-    private Vector2 spawndirection;
+
+    private float gravitationalconstant = 0.01f;
+    private float massEarth = 250.0f;
+
+    private bool rocketExists = false;
+    private Transform spawnLocation;
+    private Vector2 spawndirection;    
 
     private LineRenderer velocityArrowLR;
     private Transform velocityArrowEnd;
-    public GameObject VelocityArrow;
-    public float PercentHead;
+    private GameObject VelocityArrow;
+    private float PercentHead = 0.2f;
 
     private LineRenderer ForceArrowLR;
-    public GameObject ForceArrow;
+    private GameObject ForceArrow;
     private Transform ForceArrowEnd;
-    private bool applyGravity = true;
 
-    public GameObject Booster;
+    private GameObject Booster;
     private bool isTracking = true;
-    private float rotationspeed = 10f;
+    private float rotationspeed = 5f;
 
     public RectTransform Fuelbar;
     private float FuelPercentage = 1.0f;
     private float FuelConsumptionRate = -0.05f;
     private float RefuelingRate = 0.1f;
 
-    public GameObject fracturedRocketModel;
-    private GameObject rocketModel;
+    private GameObject fracturedRocketModel;
+    [SerializeField] private GameObject rocketModel;
     private bool hasCrashed = false;
     private bool hasLanded = false;
     private bool refueling = false;
@@ -46,30 +49,15 @@ public class ShipController : MonoBehaviour
     private Transform mainCamera;
     private Camera rocketCamera;
     private float zoomLevel = 5f;
-    private float zoomDamp = 10.0f;
-    private float trackingDamp = 10.0f;
+    private float zoomDamp = 5.0f;
+    private float trackingDamp = 5.0f;
 
     void Start()
     {
-        rocket = GameObject.Find("Rocket").transform;
-        rocketRB = rocket.GetComponent<Rigidbody2D>();
-        earth = GameObject.Find("Earth").transform;
-        spawndirection = new Vector2(startSpeedX, startSpeedY);
-        rocketRB.velocity = spawndirection;
-
-        velocityArrowLR = VelocityArrow.GetComponent<LineRenderer>();
-        velocityArrowEnd = VelocityArrow.transform;
-        ForceArrowEnd = ForceArrow.transform;
-        ForceArrowLR = ForceArrow.GetComponent<LineRenderer>();
-
-        ForceArrowLR.sortingLayerName = "Foreground";
-        velocityArrowLR.sortingLayerName = "Foreground";
-
-        rocketModel = GameObject.Find("Tiny Rocket");
-
-        mainCamera = GameObject.FindWithTag("MainCamera").transform;
-        mainCamera.position = new Vector3(rocket.transform.position.x, rocket.transform.position.y, -10);
-        rocketCamera = mainCamera.gameObject.GetComponent<Camera>();
+        FindPlanets();
+        SpawnLocation();
+        LoadRocketSpawningParameters(0f, 0.0f, true, "Rocket");
+        CameraTracking(earth);
     }
 
     void Update()
@@ -78,55 +66,64 @@ public class ShipController : MonoBehaviour
         ShipBooster();
         Forces();
         Speed();
-        Crash();
-        Rockettracking();
-        HandleZoom();
         Refuel();
-
+        Rockettracking();
+        Crash();
+        HandleZoom();
+        Respawn();
     }
 
     void Forces()
     {
-        EarthGravity(earth, massEarth, rocket, rocketRB);   
+        if (rocketExists)
+        {
+            OrbitalBodyyGravity(earth, massEarth, rocket, rocketRB);
+        }
     }
 
     void ShipBooster()
     {
-        Vector3 mousePosition = Input.mousePosition;
-        mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
+        if (rocketExists)
+        {
+            Vector3 mousePosition = Input.mousePosition;
+            mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
-        if (isTracking && FuelPercentage > 0.0f && hasCrashed == false && hasLanded == false)
-        {
-            Vector2 facedirection = new Vector2(mousePosition.x - rocket.position.x, mousePosition.y - rocket.position.y);
-            float angle = Mathf.Atan2(facedirection.y, facedirection.x) * Mathf.Rad2Deg;
-            Quaternion rotation = Quaternion.AngleAxis(angle-90, Vector3.forward);
-            rocket.rotation = Quaternion.Slerp(rocket.rotation, rotation, rotationspeed * Time.deltaTime);
-        }
-               
-        if (Input.GetKey(KeyCode.Mouse0) && FuelPercentage > 0.0f && hasCrashed == false)
-        {
-            Booster.SetActive(true);
-            Vector3 BoostForce = rocket.up.normalized * boostPower;
-            rocketRB.AddForce(BoostForce);
-            UseFuel();
-        }
-        else
-        {
-            Booster.SetActive(false);
+            if (isTracking && FuelPercentage > 0.0f && hasCrashed == false && hasLanded == false)
+            {
+                Vector2 facedirection = new Vector2(mousePosition.x - rocket.position.x, mousePosition.y - rocket.position.y);
+                float angle = Mathf.Atan2(facedirection.y, facedirection.x) * Mathf.Rad2Deg;
+                Quaternion rotation = Quaternion.AngleAxis(angle - 90, Vector3.forward);
+                rocket.rotation = Quaternion.Slerp(rocket.rotation, rotation, rotationspeed * Time.deltaTime);
+            }
+
+            if (Input.GetKey(KeyCode.Mouse0) && FuelPercentage > 0.0f && hasCrashed == false)
+            {
+                Booster.SetActive(true);
+                Vector3 BoostForce = rocket.up.normalized * boostPower;
+                rocketRB.AddForce(BoostForce);
+                UseFuel();
+            }
+            else
+            {
+                Booster.SetActive(false);
+            }
         }
     }
 
     void Speed()
     {
-        Vector3 rocketVelocityVector = new Vector3(rocketRB.velocity.x, rocketRB.velocity.y, 0);
+        if (rocketExists)
+        {
+            Vector3 rocketVelocityVector = new Vector3(rocketRB.velocity.x, rocketRB.velocity.y, 0);
 
-        if (hasCrashed || hasLanded)
-        {
-            VelocityArrow.SetActive(false);
-        }
-        else
-        {
-            DrawArrow(VelocityArrow, velocityArrowEnd, rocketVelocityVector, velocityArrowLR);
+            if (hasCrashed || hasLanded)
+            {
+                VelocityArrow.SetActive(false);
+            }
+            else
+            {
+                DrawArrow(VelocityArrow, velocityArrowEnd, rocketVelocityVector, velocityArrowLR);
+            }
         }
     }
 
@@ -155,7 +152,7 @@ public class ShipController : MonoBehaviour
 
     private void Refuel()
     {
-        if (refueling)
+        if (refueling && rocketExists)
         {
             FuelChange(RefuelingRate);
         }
@@ -180,46 +177,50 @@ public class ShipController : MonoBehaviour
                 {
                     fractures.Add(fracture.gameObject);
                     fracturesRB.Add(fracture.gameObject.GetComponent<Rigidbody2D>());
-
                 }                
             }
             for (int i = 0; i < fractures.Count; i++)
             {
-                fractures[i].transform.parent = earth;
-                fracturesRB[i].velocity = rocketRB.velocity;
+                if(fractures[i].transform.parent != earth)
+                {
+                    fracturesRB[i].velocity = rocketRB.velocity;
+                    fractures[i].transform.parent = earth;
+                }
             }
         }
         if (hasCrashed)
         {
             for (int i = 0; i < fractures.Count; i++)
             {
-                EarthGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
+                OrbitalBodyyGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
             }
         }
     }
 
-    private void EarthGravity(Transform gravitySource, float gravitySourceMass, Transform gravityTargetObject, Rigidbody2D targetRigidbody)
+    private void OrbitalBodyyGravity(Transform gravitySource, float gravitySourceMass, Transform gravityTargetObject, Rigidbody2D targetRigidbody)
     {
         Vector3 heading = gravitySource.position - gravityTargetObject.position;
         float distance = heading.magnitude;
         Vector3 gravityDirection = heading / distance;
-        float gravityForce = gravitationalconstant * gravitySourceMass / distance;
+        float gravityForce = targetRigidbody.mass * gravitationalconstant * gravitySourceMass / distance;
         Vector3 gravityForceVector = (gravityDirection * gravityForce);
 
         targetRigidbody.AddForce(gravityForceVector);
 
-        if (applyGravity && hasCrashed == false && hasLanded == false)
+        if (rocketExists & gravityTargetObject == rocket)
         {
-            ForceArrow.SetActive(true);
-            DrawArrow(ForceArrow, ForceArrowEnd, gravityForceVector*4, ForceArrowLR);
-        }
-        else
-        {
-            ForceArrow.SetActive(false);
+            if (hasCrashed == false && hasLanded == false)
+            {
+                ForceArrow.SetActive(true);
+                DrawArrow(ForceArrow, ForceArrowEnd, gravityForceVector * 4, ForceArrowLR);
+            }
+            else
+            {
+                ForceArrow.SetActive(false);
+            }
         }
     }
-
-
+    
     private void HandleZoom()
     {
         float zoomChangeAmount = 80f;
@@ -231,13 +232,13 @@ public class ShipController : MonoBehaviour
         {
             zoomLevel += zoomChangeAmount * (1f + zoomLevel / 10f) * (1f + zoomLevel / 10f) * Time.deltaTime * 0.2f;
         }
-        zoomLevel = Mathf.Clamp(zoomLevel, 1f, 20f);
+        zoomLevel = Mathf.Clamp(zoomLevel, 1f, 200f);
         rocketCamera.orthographicSize = Mathf.Lerp(rocketCamera.orthographicSize, zoomLevel, zoomDamp * Time.deltaTime);
     }
 
     private void Rockettracking()
     {
-        if (hasCrashed == false)
+        if (hasCrashed == false && rocketExists)
         {
             mainCamera.position = new Vector3(rocket.position.x, rocket.position.y, -10);
         }
@@ -251,16 +252,77 @@ public class ShipController : MonoBehaviour
         FuelPercentage = Mathf.Clamp(FuelPercentage, 0.0f, 1.0f);
     }
 
+    private void Respawn()
+    {
+        if (Input.GetKey("r") && rocketExists == false)
+        {
+            GameObject Rocket = Instantiate(rocketPrefab, spawnLocation.position, spawnLocation.rotation);
+            Rocket.transform.parent = earth;
+            LoadRocketSpawningParameters(0f, 0f, true, "Rocket(Clone)");
+            CameraTracking(rocket);
+            hasCrashed = false;
+            performOnesForCrash = true;
+            FuelPercentage = 1.0f;
+        }
+    }
+
     IEnumerator Explosion()
     {
-        yield return new WaitForSeconds(2f);
-        rocket.gameObject.SetActive(false);
+        yield return new WaitForSeconds(5f);
+        CameraTracking(earth);
+        rocketExists = false;
+        Destroy(rocket.gameObject);
     }
 
     private void CollisionTracker()
     {
-        hasCrashed = rocketModel.GetComponent<CollisionDetector>().hasCrashed;
-        hasLanded = rocketModel.GetComponent<CollisionDetector>().hasLanded;
-        refueling = rocketModel.GetComponent<CollisionDetector>().refueling;
+        if (rocketExists)
+        {
+            hasCrashed = rocketModel.GetComponent<CollisionDetector>().hasCrashed;
+            hasLanded = rocketModel.GetComponent<CollisionDetector>().hasLanded;
+            refueling = rocketModel.GetComponent<CollisionDetector>().refueling;
+        }
     }
+
+    private void LoadRocketSpawningParameters(float startSpeedX, float startSpeedY, bool rocketExistsAtStart, string rocketName)
+    {
+        rocketExists = rocketExistsAtStart;
+        if (rocketExists)
+        {
+            rocket = GameObject.Find(rocketName).transform;
+            rocketRB = rocket.GetComponent<Rigidbody2D>();
+            Booster = GameObject.Find("Booster");
+            rocketModel = GameObject.Find("Tiny Rocket");
+            fracturedRocketModel = GameObject.Find("Tiny Rocket(fractured)");
+            fracturedRocketModel.SetActive(false);
+            spawndirection = new Vector2(startSpeedX, startSpeedY);
+            rocketRB.velocity = spawndirection;
+
+            VelocityArrow = GameObject.Find("VelocityArrow");
+            velocityArrowLR = VelocityArrow.GetComponent<LineRenderer>();
+            velocityArrowEnd = VelocityArrow.transform;
+
+            ForceArrow = GameObject.Find("ForceArrow");
+            ForceArrowEnd = ForceArrow.transform;
+            ForceArrowLR = ForceArrow.GetComponent<LineRenderer>();
+        }
+    }
+
+
+    private void SpawnLocation()
+    {
+        spawnLocation = GameObject.Find("SpawnLocation").transform;
+    }
+
+    private void CameraTracking(Transform target)
+    {
+        mainCamera = GameObject.FindWithTag("MainCamera").transform;
+        mainCamera.position = new Vector3(target.transform.position.x, target.transform.position.y, -10);       
+        rocketCamera = mainCamera.gameObject.GetComponent<Camera>();
+    }
+
+    private void FindPlanets()
+    {
+        earth = GameObject.Find("Earth").transform;
+    }    
 }
