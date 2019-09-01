@@ -63,14 +63,14 @@ public class ShipController : MonoBehaviour
     void Update()
     {
         CollisionTracker();
-        ShipBooster();
-        Forces();
-        Speed();
         Refuel();
         Rockettracking();
         Crash();
         HandleZoom();
         Respawn();
+        ShipBooster();
+        Speed();
+        Forces();
     }
 
     void Forces()
@@ -188,12 +188,9 @@ public class ShipController : MonoBehaviour
                 }
             }
         }
-        if (hasCrashed)
+        for (int i = 0; i < fractures.Count; i++)
         {
-            for (int i = 0; i < fractures.Count; i++)
-            {
-                OrbitalBodyyGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
-            }
+            OrbitalBodyyGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
         }
     }
 
@@ -258,17 +255,17 @@ public class ShipController : MonoBehaviour
         {
             GameObject Rocket = Instantiate(rocketPrefab, spawnLocation.position, spawnLocation.rotation);
             Rocket.transform.parent = earth;
-            LoadRocketSpawningParameters(0f, 0f, true, "Rocket(Clone)");
-            CameraTracking(rocket);
             hasCrashed = false;
             performOnesForCrash = true;
+            LoadRocketSpawningParameters(0f, 0f, true, "Rocket(Clone)");
+            CameraTracking(rocket);
             FuelPercentage = 1.0f;
         }
     }
 
     IEnumerator Explosion()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(3f);
         CameraTracking(earth);
         rocketExists = false;
         Destroy(rocket.gameObject);
