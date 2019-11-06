@@ -35,7 +35,7 @@ public class ShipController : MonoBehaviour
 
     public RectTransform Fuelbar;
     private float FuelPercentage = 1.0f;
-    private float FuelConsumptionRate = -0.05f;
+    private float FuelConsumptionRate = -0.03f;
     private float RefuelingRate = 0.1f;
 
     private GameObject fracturedRocketModel;
@@ -53,7 +53,10 @@ public class ShipController : MonoBehaviour
     private float zoomDamp = 5.0f;
     private float trackingDamp = 5.0f;
 
-    [SerializeField]  private GameObject laser;
+    private GameObject laser;
+    private GameObject beamHit;
+    private GameObject laserSystem;
+    private float laserFuelCost = -0.03f;
 
     private Vector3 mousePosition;
 
@@ -76,7 +79,7 @@ public class ShipController : MonoBehaviour
         ShipBooster();
         Speed();
         Forces();
-        Laserbeam();
+        LaserControls();
     }
 
     void Forces()
@@ -310,6 +313,10 @@ public class ShipController : MonoBehaviour
             ForceArrowLR = ForceArrow.GetComponent<LineRenderer>();
 
             laser = GameObject.Find("LaserSpawn");
+            beamHit = GameObject.Find("BeamHit");
+            beamHit.SetActive(false);
+            laserSystem = GameObject.Find("LaserSystem");
+            laserSystem.SetActive(false);
         }
     }
 
@@ -345,16 +352,36 @@ public class ShipController : MonoBehaviour
 
             LaserLineRenderer.SetPosition(0, laserSpawn);
             RaycastHit hit;
-            if (Physics.Raycast(laserSpawn, laserAim, out hit))
+            if (Physics.Raycast(laserSpawn, Vector3.Normalize(laserAim)*100f, out hit))
             {
                 if (hit.collider)
                 {
+                    beamHit.SetActive(true);
+                    beamHit.transform.position = hit.point;
                     LaserLineRenderer.SetPosition(1, hit.point);
                     Debug.Log("Hitting");
                 }
             }
-            else LaserLineRenderer.SetPosition(1, laserFire);
+            else
+            {
+                LaserLineRenderer.SetPosition(1, laserSpawn + Vector3.Normalize(laserFire - laserSpawn)*4f);
+                beamHit.SetActive(false);
+            }
         }
 
+    }
+
+    private void LaserControls()
+    {
+        if (Input.GetKey(KeyCode.Mouse1)) 
+        {
+            laserSystem.SetActive(true);
+            Laserbeam();
+            FuelChange(laserFuelCost);
+        }
+        else
+        {
+            laserSystem.SetActive(false);
+        }
     }
 }
