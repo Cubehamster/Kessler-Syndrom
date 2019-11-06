@@ -337,6 +337,7 @@ public class ShipController : MonoBehaviour
         {
             Vector3 laserSpawn = laser.transform.position;
             Vector3 laserAim = new Vector3(mousePosition.x - laserSpawn.x, mousePosition.y - laserSpawn.y, laserSpawn.z);
+            Vector3 laserFire = new Vector3(mousePosition.x, mousePosition.y, laserSpawn.z);
 
             Debug.DrawRay(laserSpawn, laserAim, Color.blue);
 
@@ -352,7 +353,7 @@ public class ShipController : MonoBehaviour
                     Debug.Log("Hitting");
                 }
             }
-            else LaserLineRenderer.SetPosition(1, mousePosition);
+            else LaserLineRenderer.SetPosition(1, laserFire);
         }
 
     }

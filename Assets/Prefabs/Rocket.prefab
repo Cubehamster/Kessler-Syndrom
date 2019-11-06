@@ -34414,8 +34414,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 1, g: 1, b: 1, a: 0.39215687}
+      key1: {r: 1, g: 1, b: 1, a: 0.39215687}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -34430,7 +34430,7 @@ LineRenderer:
       ctime5: 0
       ctime6: 0
       ctime7: 0
-      atime0: 0
+      atime0: 384
       atime1: 65535
       atime2: 0
       atime3: 0
@@ -74354,8 +74354,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 958828289606327825}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.716251, y: -3.4280322, z: -0.67687577}
-  m_LocalScale: {x: 0.1, y: 0.13, z: 0.13}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.09999994, y: 0.12999989, z: 0.12999995}
   m_Children:
   - {fileID: 958828289894140031}
   - {fileID: 958828289847757899}
@@ -84467,8 +84467,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 1, g: 1, b: 1, a: 0.39215687}
+      key1: {r: 1, g: 1, b: 1, a: 0.39215687}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -84483,7 +84483,7 @@ LineRenderer:
       ctime5: 0
       ctime6: 0
       ctime7: 0
-      atime0: 0
+      atime0: 384
       atime1: 65535
       atime2: 0
       atime3: 0
@@ -124080,7 +124080,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 294d2fee04a56d7438fe01d1b484caf0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -124106,7 +124106,7 @@ LineRenderer:
   - {x: 0, y: 0, z: 1}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 0.01
+    widthMultiplier: 0.1
     widthCurve:
       serializedVersion: 2
       m_Curve:
@@ -124119,29 +124119,38 @@ LineRenderer:
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0.62204725
+        inSlope: -1.023925
+        outSlope: -1.023925
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.17687076
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 0.11764707, b: 0.53333336, a: 1}
-      key1: {r: 1, g: 0.4117647, b: 0.53333336, a: 1}
-      key2: {r: 0.20784314, g: 0.11764706, b: 0.53333336, a: 0.8352941}
-      key3: {r: 0, g: 0, b: 0, a: 0}
-      key4: {r: 0, g: 0, b: 0, a: 0}
+      key0: {r: 1, g: 0.962151, b: 0.7216981, a: 1}
+      key1: {r: 1, g: 0.92494345, b: 0.4481132, a: 1}
+      key2: {r: 0.9811321, g: 0.12052374, b: 0, a: 0.8352941}
+      key3: {r: 1, g: 0.65203834, b: 0.4669811, a: 0}
+      key4: {r: 1, g: 0.6666666, b: 0, a: 0}
       key5: {r: 0, g: 0, b: 0, a: 0}
       key6: {r: 0, g: 0, b: 0, a: 0}
       key7: {r: 0, g: 0, b: 0, a: 0}
       ctime0: 0
-      ctime1: 36044
-      ctime2: 65535
-      ctime3: 0
-      ctime4: 0
+      ctime1: 18258
+      ctime2: 52659
+      ctime3: 65535
+      ctime4: 65535
       ctime5: 0
       ctime6: 0
       ctime7: 0
       atime0: 0
-      atime1: 36044
+      atime1: 65535
       atime2: 53777
       atime3: 65535
       atime4: 0
@@ -124149,8 +124158,8 @@ LineRenderer:
       atime6: 0
       atime7: 0
       m_Mode: 0
-      m_NumColorKeys: 3
-      m_NumAlphaKeys: 4
+      m_NumColorKeys: 4
+      m_NumAlphaKeys: 2
     numCornerVertices: 0
     numCapVertices: 0
     alignment: 0
@@ -124201,7 +124210,7 @@ Light:
   serializedVersion: 9
   m_Type: 2
   m_Color: {r: 1, g: 0.75, b: 0.3764706, a: 1}
-  m_Intensity: 0.1
+  m_Intensity: 0.05
   m_Range: 1
   m_SpotAngle: 70
   m_InnerSpotAngle: 7
