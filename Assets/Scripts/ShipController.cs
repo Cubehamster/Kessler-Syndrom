@@ -10,9 +10,9 @@ public class ShipController : MonoBehaviour
     private Transform rocket;
     private Rigidbody2D rocketRB;
 
-    private float boostPower = 0.8f;
+    private float boostPower = 1f;
 
-    private float gravitationalconstant = 0.01f;
+    private float gravitationalconstant = 0.008f;
     private float massEarth = 250.0f;
 
     private bool rocketExists = false;
@@ -29,6 +29,7 @@ public class ShipController : MonoBehaviour
     private Transform ForceArrowEnd;
 
     private GameObject Booster;
+    private Quaternion rotation;
     private bool isTracking = true;
     private float rotationspeed = 5f;
 
@@ -52,6 +53,10 @@ public class ShipController : MonoBehaviour
     private float zoomDamp = 5.0f;
     private float trackingDamp = 5.0f;
 
+    [SerializeField]  private GameObject laser;
+
+    private Vector3 mousePosition;
+
     void Start()
     {
         FindPlanets();
@@ -71,6 +76,7 @@ public class ShipController : MonoBehaviour
         ShipBooster();
         Speed();
         Forces();
+        Laserbeam();
     }
 
     void Forces()
@@ -85,7 +91,7 @@ public class ShipController : MonoBehaviour
     {
         if (rocketExists)
         {
-            Vector3 mousePosition = Input.mousePosition;
+            mousePosition = Input.mousePosition;
             mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
             if (isTracking && FuelPercentage > 0.0f && hasCrashed == false && hasLanded == false)
@@ -302,6 +308,8 @@ public class ShipController : MonoBehaviour
             ForceArrow = GameObject.Find("ForceArrow");
             ForceArrowEnd = ForceArrow.transform;
             ForceArrowLR = ForceArrow.GetComponent<LineRenderer>();
+
+            laser = GameObject.Find("LaserSpawn");
         }
     }
 
@@ -321,5 +329,31 @@ public class ShipController : MonoBehaviour
     private void FindPlanets()
     {
         earth = GameObject.Find("Earth").transform;
-    }    
+    }
+
+    private void Laserbeam()
+    {
+        if (rocketExists)
+        {
+            Vector3 laserSpawn = laser.transform.position;
+            Vector3 laserAim = new Vector3(mousePosition.x - laserSpawn.x, mousePosition.y - laserSpawn.y, laserSpawn.z);
+
+            Debug.DrawRay(laserSpawn, laserAim, Color.blue);
+
+            LineRenderer LaserLineRenderer = laser.GetComponent<LineRenderer>();
+
+            LaserLineRenderer.SetPosition(0, laserSpawn);
+            RaycastHit hit;
+            if (Physics.Raycast(laserSpawn, laserAim, out hit))
+            {
+                if (hit.collider)
+                {
+                    LaserLineRenderer.SetPosition(1, hit.point);
+                    Debug.Log("Hitting");
+                }
+            }
+            else LaserLineRenderer.SetPosition(1, mousePosition);
+        }
+
+    }
 }

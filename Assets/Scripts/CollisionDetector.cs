@@ -9,10 +9,14 @@ public class CollisionDetector : MonoBehaviour
     [System.NonSerialized] public bool refueling = false;
     public Rigidbody2D rocketRB;
 
+    private float speed;
+
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if ((other.collider.tag == "Planet" || other.collider.tag == "Refuel") && rocketRB.velocity.magnitude < 0.25f)
+        Debug.Log("Poof");
+        if (speed < 0.45f && (other.collider.tag == "Planet" || other.collider.tag == "Refuel"))
         {
+            Debug.Log("Poof2");
             hasLanded = true;
             if (other.collider.tag == "Refuel")
             {
@@ -29,6 +33,11 @@ public class CollisionDetector : MonoBehaviour
     {
         hasLanded = false;
         refueling = false;
+    }
+
+    private void FixedUpdate()
+    {
+        speed = rocketRB.velocity.magnitude;
     }
 }
 

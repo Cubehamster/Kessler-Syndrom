@@ -10,6 +10,7 @@ TagManager:
   - Planet
   - Refuel
   - Velocity
+  - LaserSpawn
   layers:
   - Default
   - TransparentFX
