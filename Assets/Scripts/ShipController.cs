@@ -57,6 +57,7 @@ public class ShipController : MonoBehaviour
     private GameObject beamHit;
     private GameObject laserSystem;
     private float laserFuelCost = -0.03f;
+    private float laserDmg = 10.0f;
 
     private GameObject forcefieldCollider;
 
@@ -79,21 +80,22 @@ public class ShipController : MonoBehaviour
 
     void Update()
     {
+        LaserControls();        
         ForceFieldController();
         CollisionTracker();
-        Refuel();
-        Crash();
+        Refuel();        
         HandleZoom();
         Respawn();
         ShipBooster();
         Speed();
-        Forces();
-        LaserControls();
+        Forces();        
     }
 
     private void FixedUpdate()
     {
         Rockettracking();
+        FractureTracker();
+        Crash();
     }
 
     void Forces()
@@ -210,13 +212,10 @@ public class ShipController : MonoBehaviour
                 if(fractures[i].transform.parent != earth)
                 {
                     fracturesRB[i].velocity = rocketRB.velocity;
+                    fractures[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints = 10f;
                     fractures[i].transform.parent = earth;
                 }
             }
-        }
-        for (int i = 0; i < fractures.Count; i++)
-        {
-            OrbitalBodyyGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
         }
     }
 
@@ -269,7 +268,10 @@ public class ShipController : MonoBehaviour
         {
             CameraTracking(rocket);
         }
-        else CameraTracking(earth);
+        else if (!rocketExists)
+        {
+            CameraTracking(earth);
+        }
 
     }
 
@@ -382,6 +384,10 @@ public class ShipController : MonoBehaviour
                     beamHit.SetActive(true);
                     beamHit.transform.position = hit.point;
                     LaserLineRenderer.SetPosition(1, hit.point);
+                    if (hit.collider.tag == "Fracture")
+                    {
+                        hit.collider.gameObject.GetComponent<CollisionImpactSound>().hitpoints -= laserDmg * Time.deltaTime;
+                    }
                 }
             }
             else
@@ -420,5 +426,19 @@ public class ShipController : MonoBehaviour
         {
             forcefieldCollider.SetActive(false);
         }
-    }    
+    }   
+    
+    private void FractureTracker()
+    {
+        for (int i = 0; i < fractures.Count; i++)
+        {
+            if (fractures[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints <= 0)
+            {
+                Destroy(fractures[i].gameObject);
+                fractures.RemoveAt(i);
+                fracturesRB.RemoveAt(i);
+            }
+            OrbitalBodyyGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
+        }
+    }
 }

@@ -8,6 +8,8 @@ public class CollisionImpactSound : MonoBehaviour
     private bool playOnce = true;
     private GameObject impactExplosion;
 
+    public float hitpoints;
+
     private void Start()
     {
         debris = GetComponent<AudioSource>();
@@ -28,4 +30,12 @@ public class CollisionImpactSound : MonoBehaviour
             }
         }
     }
+
+    //private void FixedUpdate()
+  //  {
+   //     if(hitpoints <= 0)
+   //     {
+   //         Destroy(transform.gameObject);
+    //    }
+  //  }
 }
