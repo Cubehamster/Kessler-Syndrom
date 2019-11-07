@@ -13,10 +13,8 @@ public class CollisionDetector : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        Debug.Log("Poof");
         if (speed < 0.45f && (other.collider.tag == "Planet" || other.collider.tag == "Refuel"))
         {
-            Debug.Log("Poof2");
             hasLanded = true;
             if (other.collider.tag == "Refuel")
             {

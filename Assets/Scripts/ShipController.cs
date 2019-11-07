@@ -58,21 +58,30 @@ public class ShipController : MonoBehaviour
     private GameObject laserSystem;
     private float laserFuelCost = -0.03f;
 
+    private GameObject forcefieldCollider;
+
     private Vector3 mousePosition;
+    private float startTime;
+    private float cameraRefocusSpeed = 0.125f;
 
     void Start()
     {
+        mainCamera = GameObject.FindWithTag("MainCamera").transform;
+        rocketCamera = mainCamera.gameObject.GetComponent<Camera>();
+
         FindPlanets();
         SpawnLocation();
         LoadRocketSpawningParameters(0f, 0.0f, true, "Rocket");
+        forcefieldCollider = GameObject.Find("ForcefieldCollider");
         CameraTracking(earth);
+        startTime = Time.time;
     }
 
     void Update()
     {
+        ForceFieldController();
         CollisionTracker();
         Refuel();
-        Rockettracking();
         Crash();
         HandleZoom();
         Respawn();
@@ -80,6 +89,11 @@ public class ShipController : MonoBehaviour
         Speed();
         Forces();
         LaserControls();
+    }
+
+    private void FixedUpdate()
+    {
+        Rockettracking();
     }
 
     void Forces()
@@ -125,13 +139,16 @@ public class ShipController : MonoBehaviour
         {
             Vector3 rocketVelocityVector = new Vector3(rocketRB.velocity.x, rocketRB.velocity.y, 0);
 
-            if (hasCrashed || hasLanded)
+            if (VelocityArrow)
             {
-                VelocityArrow.SetActive(false);
-            }
-            else
-            {
-                DrawArrow(VelocityArrow, velocityArrowEnd, rocketVelocityVector, velocityArrowLR);
+                if (hasCrashed || hasLanded)
+                {
+                    VelocityArrow.SetActive(false);
+                }
+                else
+                {
+                    DrawArrow(VelocityArrow, velocityArrowEnd, rocketVelocityVector, velocityArrowLR);
+                }
             }
         }
     }
@@ -215,15 +232,19 @@ public class ShipController : MonoBehaviour
 
         if (rocketExists & gravityTargetObject == rocket)
         {
-            if (hasCrashed == false && hasLanded == false)
+            if (ForceArrow)
             {
-                ForceArrow.SetActive(true);
-                DrawArrow(ForceArrow, ForceArrowEnd, gravityForceVector * 4, ForceArrowLR);
+                if (hasCrashed == false && hasLanded == false)
+                {
+                    ForceArrow.SetActive(true);
+                    DrawArrow(ForceArrow, ForceArrowEnd, gravityForceVector * 4, ForceArrowLR);
+                }
+                else
+                {
+                    ForceArrow.SetActive(false);
+                }
             }
-            else
-            {
-                ForceArrow.SetActive(false);
-            }
+
         }
     }
     
@@ -246,8 +267,9 @@ public class ShipController : MonoBehaviour
     {
         if (hasCrashed == false && rocketExists)
         {
-            mainCamera.position = new Vector3(rocket.position.x, rocket.position.y, -10);
+            CameraTracking(rocket);
         }
+        else CameraTracking(earth);
 
     }
 
@@ -274,10 +296,11 @@ public class ShipController : MonoBehaviour
 
     IEnumerator Explosion()
     {
+        Destroy(ForceArrow);
+        Destroy(VelocityArrow);
         yield return new WaitForSeconds(3f);
-        CameraTracking(earth);
         rocketExists = false;
-        Destroy(rocket.gameObject);
+        Destroy(rocket.gameObject);        
     }
 
     private void CollisionTracker()
@@ -328,9 +351,9 @@ public class ShipController : MonoBehaviour
 
     private void CameraTracking(Transform target)
     {
-        mainCamera = GameObject.FindWithTag("MainCamera").transform;
-        mainCamera.position = new Vector3(target.transform.position.x, target.transform.position.y, -10);       
-        rocketCamera = mainCamera.gameObject.GetComponent<Camera>();
+        Vector3 targetCamera = new Vector3(target.transform.position.x, target.transform.position.y, -10);
+        Vector3 smoothedPosition = Vector3.Lerp(mainCamera.position, targetCamera, cameraRefocusSpeed);
+        mainCamera.position = smoothedPosition;
     }
 
     private void FindPlanets()
@@ -343,7 +366,7 @@ public class ShipController : MonoBehaviour
         if (rocketExists)
         {
             Vector3 laserSpawn = laser.transform.position;
-            Vector3 laserAim = new Vector3(mousePosition.x - laserSpawn.x, mousePosition.y - laserSpawn.y, laserSpawn.z);
+            Vector2 laserAim = new Vector2(mousePosition.x - laserSpawn.x, mousePosition.y - laserSpawn.y);
             Vector3 laserFire = new Vector3(mousePosition.x, mousePosition.y, laserSpawn.z);
 
             Debug.DrawRay(laserSpawn, laserAim, Color.blue);
@@ -351,15 +374,14 @@ public class ShipController : MonoBehaviour
             LineRenderer LaserLineRenderer = laser.GetComponent<LineRenderer>();
 
             LaserLineRenderer.SetPosition(0, laserSpawn);
-            RaycastHit hit;
-            if (Physics.Raycast(laserSpawn, Vector3.Normalize(laserAim)*100f, out hit))
+            RaycastHit2D hit = Physics2D.Raycast(laserSpawn, Vector3.Normalize(laserAim) * 10f);
+            if (hit)
             {
                 if (hit.collider)
                 {
                     beamHit.SetActive(true);
                     beamHit.transform.position = hit.point;
                     LaserLineRenderer.SetPosition(1, hit.point);
-                    Debug.Log("Hitting");
                 }
             }
             else
@@ -373,15 +395,30 @@ public class ShipController : MonoBehaviour
 
     private void LaserControls()
     {
-        if (Input.GetKey(KeyCode.Mouse1)) 
+        if (rocketExists)
         {
-            laserSystem.SetActive(true);
-            Laserbeam();
-            FuelChange(laserFuelCost);
+            if (Input.GetKey(KeyCode.Mouse1))
+            {
+                laserSystem.SetActive(true);
+                Laserbeam();
+                FuelChange(laserFuelCost);
+            }
+            else
+            {
+                laserSystem.SetActive(false);
+            }
+        }
+    }
+
+    private void ForceFieldController()
+    {
+        if (rocketExists)
+        {
+            forcefieldCollider.SetActive(true);
         }
         else
         {
-            laserSystem.SetActive(false);
+            forcefieldCollider.SetActive(false);
         }
-    }
+    }    
 }
