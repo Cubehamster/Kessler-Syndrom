@@ -23,7 +23,6 @@ public class CollisionDetector : MonoBehaviour
         }
         else
         {
-            Debug.Log("has collided");
             hasCrashed = true;
         }
     }

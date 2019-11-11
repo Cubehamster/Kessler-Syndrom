@@ -60,7 +60,7 @@ public class ShipController : MonoBehaviour
     private GameObject beamHit;
     private GameObject laserSystem;
     private float laserFuelCost = -0.03f;
-    private float laserDmg = 10.0f;
+    private float laserDmg = 2.0f;
 
     private GameObject forcefieldCollider;
     private bool forceFieldRestart = false;
@@ -88,16 +88,16 @@ public class ShipController : MonoBehaviour
         CollisionTracker();
         Refuel();        
         HandleZoom();
+        Speed();
         Respawn();
-        ShipBooster();
-        Speed();   
     }
 
     private void FixedUpdate()
     {
+        ShipBooster();
         DestroyFractures();
         Rockettracking();
-        FractureTracker();
+        DebriesTracker();
         Crash();
         Forces();
         ForceFieldController();
@@ -229,17 +229,22 @@ public class ShipController : MonoBehaviour
                 {
                     fracturesRB[i].velocity = rocketRB.velocity;
                     fractures[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints = fracturesRB[i].mass;
-                    StartCoroutine(CrashChangeLayer(i));
+                    StartCoroutine(CrashChangeLayer(i, fractures, debries, fracturesRB, debriesRB));
                     fractures[i].transform.parent = earth;
                 }
             }
         }
     }
 
-    IEnumerator CrashChangeLayer(int i)
+    IEnumerator CrashChangeLayer(int i, List<GameObject> listFrom, List<GameObject> listTo, List<Rigidbody2D> listFromRB, List<Rigidbody2D> listToRB)
     {
         yield return new WaitForSeconds(1f);
-        fractures[i].layer = 12;
+        listFrom[0].tag = "Debries";
+        listFrom[0].layer = 12;
+        listTo.Add(fractures[0].gameObject);
+        listToRB.Add(fracturesRB[0]);
+        listFromRB.RemoveAt(0);
+        listFrom.RemoveAt(0);
     }
 
 
@@ -260,7 +265,7 @@ public class ShipController : MonoBehaviour
                 if (hasCrashed == false && hasLanded == false)
                 {
                     ForceArrow.SetActive(true);
-                    DrawArrow(ForceArrow, ForceArrowEnd, gravityForceVector * 4, ForceArrowLR);
+                    DrawArrow(ForceArrow, ForceArrowEnd, gravityForceVector/rocketRB.mass * 4, ForceArrowLR);
                 }
                 else
                 {
@@ -422,7 +427,7 @@ public class ShipController : MonoBehaviour
                     beamHit.SetActive(true);
                     beamHit.transform.position = hit.point;
                     LaserLineRenderer.SetPosition(1, hit.point);
-                    if (hit.collider.tag == "Fracture")
+                    if (hit.collider.tag == "Debries")
                     {
                         hit.collider.gameObject.GetComponent<CollisionImpactSound>().hitpoints -= laserDmg * Time.deltaTime;
                     }
@@ -474,34 +479,42 @@ public class ShipController : MonoBehaviour
         forceFieldRestart = false;
     }
     
-    private void FractureTracker()
+    private void DebriesTracker()
     {
-        for (int i = 0; i < fractures.Count; i++)
+        for (int i = 0; i < debries.Count; i++)
         {
-            if (fractures[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints <= 0 && fractures[i].gameObject.GetComponent<CollisionImpactSound>().playOnce)
+            if (debries[i].GetComponent<CollisionImpactSound>().hitpoints <= 0 && debries[i].GetComponent<CollisionImpactSound>().playOnce)
             {
-                fractures[i].gameObject.GetComponent<CollisionImpactSound>().playOnce = false;
+                debries[i].GetComponent<CollisionImpactSound>().playOnce = false;
 
-                if (fractures[i].gameObject.GetComponent<CollisionImpactSound>().impactExplosion != null)
+                if (debries[i].GetComponent<CollisionImpactSound>().impactExplosion != null)
                 {
-                    fractures[i].gameObject.GetComponent<CollisionImpactSound>().debris.Play();
-                    fractures[i].gameObject.GetComponent<CollisionImpactSound>().impactExplosion.SetActive(true);
-                    fractures[i].gameObject.GetComponent<MeshRenderer>().enabled = false;
+                    debries[i].GetComponent<CollisionImpactSound>().debris.Play();
+                    debries[i].gameObject.GetComponent<CollisionImpactSound>().impactExplosion.SetActive(true);
+                    debries[i].GetComponent<PolygonCollider2D>().enabled = false;
+                    for (int n = 0; n < (debries[i].transform.childCount); n++)
+                    {
+                        debries[i].transform.GetChild(n).gameObject.SetActive(true);
+                        debries[i].transform.GetChild(n).gameObject.GetComponent<CollisionImpactSound>().hitpoints = 100.0f;
+                        debries[i].transform.GetChild(n).gameObject.GetComponent<Rigidbody2D>().velocity = debriesRB[i].velocity;
+                        debries[i].transform.GetChild(n).gameObject.transform.parent = astroids;
+                    }
+                    debries[i].GetComponent<MeshRenderer>().enabled = false;
                 }
-                fractures[i].gameObject.GetComponent<CollisionImpactSound>().triggerDestruction = true; 
+                debries[i].gameObject.GetComponent<CollisionImpactSound>().triggerDestruction = true;
             }
         }
     }
 
     private void DestroyFractures()
     {
-        for (int i = 0; i < fractures.Count; i++)
+        for (int i = 0; i < debries.Count; i++)
         {
-            if (fractures[i].gameObject.GetComponent<CollisionImpactSound>().destructionComplete == true)
+            if (debries[i].gameObject.GetComponent<CollisionImpactSound>().destructionComplete == true)
             {
-                Destroy(fractures[i]);
-                fracturesRB.RemoveAt(i);
-                fractures.RemoveAt(i);
+                Destroy(debries[i]);
+                debriesRB.RemoveAt(i);
+                debries.RemoveAt(i);
             }
         }
     }
