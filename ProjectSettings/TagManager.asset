@@ -11,6 +11,7 @@ TagManager:
   - Refuel
   - Velocity
   - LaserSpawn
+  - Debries
   layers:
   - Default
   - TransparentFX
@@ -24,7 +25,7 @@ TagManager:
   - Fractures
   - ForceField
   - Rocket
-  - 
+  - Debries
   - 
   - 
   - 

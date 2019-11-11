@@ -13,7 +13,7 @@ public class CollisionDetector : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D other)
     {
-        if (speed < 0.45f && (other.collider.tag == "Planet" || other.collider.tag == "Refuel"))
+        if (speed < 0.55f && (other.collider.tag == "Planet" || other.collider.tag == "Refuel"))
         {
             hasLanded = true;
             if (other.collider.tag == "Refuel")
@@ -23,6 +23,7 @@ public class CollisionDetector : MonoBehaviour
         }
         else
         {
+            Debug.Log("has collided");
             hasCrashed = true;
         }
     }

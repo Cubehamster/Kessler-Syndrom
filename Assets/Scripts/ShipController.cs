@@ -6,11 +6,13 @@ public class ShipController : MonoBehaviour
 {
     public GameObject rocketPrefab;
 
+    private Transform astroids;
     private Transform earth;
     private Transform rocket;
     private Rigidbody2D rocketRB;
 
     private float boostPower = 1f;
+    private bool boosterEnabled = true;
 
     private float gravitationalconstant = 0.008f;
     private float massEarth = 250.0f;
@@ -45,13 +47,14 @@ public class ShipController : MonoBehaviour
     private bool refueling = false;
     private bool performOnesForCrash = true;
     public List<GameObject> fractures;
+    public List<GameObject> debries;
     public List<Rigidbody2D> fracturesRB;
+    public List<Rigidbody2D> debriesRB;
 
     private Transform mainCamera;
     private Camera rocketCamera;
     private float zoomLevel = 5f;
     private float zoomDamp = 5.0f;
-    private float trackingDamp = 5.0f;
 
     private GameObject laser;
     private GameObject beamHit;
@@ -60,6 +63,7 @@ public class ShipController : MonoBehaviour
     private float laserDmg = 10.0f;
 
     private GameObject forcefieldCollider;
+    private bool forceFieldRestart = false;
 
     private Vector3 mousePosition;
     private float startTime;
@@ -75,27 +79,28 @@ public class ShipController : MonoBehaviour
         LoadRocketSpawningParameters(0f, 0.0f, true, "Rocket");
         forcefieldCollider = GameObject.Find("ForcefieldCollider");
         CameraTracking(earth);
-        startTime = Time.time;
+        StartLevel();
     }
 
     void Update()
     {
-        LaserControls();        
-        ForceFieldController();
+        LaserControls();    
         CollisionTracker();
         Refuel();        
         HandleZoom();
         Respawn();
         ShipBooster();
-        Speed();
-        Forces();        
+        Speed();   
     }
 
     private void FixedUpdate()
     {
+        DestroyFractures();
         Rockettracking();
         FractureTracker();
         Crash();
+        Forces();
+        ForceFieldController();
     }
 
     void Forces()
@@ -103,6 +108,14 @@ public class ShipController : MonoBehaviour
         if (rocketExists)
         {
             OrbitalBodyyGravity(earth, massEarth, rocket, rocketRB);
+        }
+        for (int i = 0; i < fractures.Count; i++)
+        {
+            OrbitalBodyyGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
+        }
+        for (int i = 0; i < debries.Count; i++)
+        {
+            OrbitalBodyyGravity(earth, massEarth, debries[i].transform, debriesRB[i]);
         }
     }
 
@@ -113,7 +126,7 @@ public class ShipController : MonoBehaviour
             mousePosition = Input.mousePosition;
             mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
-            if (isTracking && FuelPercentage > 0.0f && hasCrashed == false && hasLanded == false)
+            if (isTracking && FuelPercentage > 0.0f && hasCrashed == false && hasLanded == false && boosterEnabled)
             {
                 Vector2 facedirection = new Vector2(mousePosition.x - rocket.position.x, mousePosition.y - rocket.position.y);
                 float angle = Mathf.Atan2(facedirection.y, facedirection.x) * Mathf.Rad2Deg;
@@ -121,10 +134,10 @@ public class ShipController : MonoBehaviour
                 rocket.rotation = Quaternion.Slerp(rocket.rotation, rotation, rotationspeed * Time.deltaTime);
             }
 
-            if (Input.GetKey(KeyCode.Mouse0) && FuelPercentage > 0.0f && hasCrashed == false)
+            if (Input.GetKey(KeyCode.Mouse0) && FuelPercentage > 0.0f && hasCrashed == false && boosterEnabled)
             {
                 Booster.SetActive(true);
-                Vector3 BoostForce = rocket.up.normalized * boostPower;
+                Vector3 BoostForce = rocket.up.normalized * boostPower * rocketRB.mass;
                 rocketRB.AddForce(BoostForce);
                 UseFuel();
             }
@@ -191,6 +204,9 @@ public class ShipController : MonoBehaviour
         if ((Input.GetKey("b") && performOnesForCrash) || (hasCrashed && performOnesForCrash))
         {
             performOnesForCrash = false;
+            forceFieldRestart = true;
+            boosterEnabled = false;
+
             fracturedRocketModel.SetActive(true);
             fracturedRocketModel.transform.position = rocketModel.transform.position;
             fracturedRocketModel.transform.rotation = rocketModel.transform.rotation;
@@ -212,12 +228,20 @@ public class ShipController : MonoBehaviour
                 if(fractures[i].transform.parent != earth)
                 {
                     fracturesRB[i].velocity = rocketRB.velocity;
-                    fractures[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints = 10f;
+                    fractures[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints = fracturesRB[i].mass;
+                    StartCoroutine(CrashChangeLayer(i));
                     fractures[i].transform.parent = earth;
                 }
             }
         }
     }
+
+    IEnumerator CrashChangeLayer(int i)
+    {
+        yield return new WaitForSeconds(1f);
+        fractures[i].layer = 12;
+    }
+
 
     private void OrbitalBodyyGravity(Transform gravitySource, float gravitySourceMass, Transform gravityTargetObject, Rigidbody2D targetRigidbody)
     {
@@ -268,11 +292,17 @@ public class ShipController : MonoBehaviour
         {
             CameraTracking(rocket);
         }
-        else if (!rocketExists)
+        else if (!rocketExists && performOnesForCrash)
         {
-            CameraTracking(earth);
+            StartCoroutine(CameraSwitchEarth());
         }
 
+    }
+
+    IEnumerator CameraSwitchEarth()
+    {
+        yield return new WaitForSeconds(3f);
+        CameraTracking(earth);
     }
 
     private void FuelChange(float FuelRate)
@@ -293,7 +323,14 @@ public class ShipController : MonoBehaviour
             LoadRocketSpawningParameters(0f, 0f, true, "Rocket(Clone)");
             CameraTracking(rocket);
             FuelPercentage = 1.0f;
+            StartCoroutine(RespawnControlDelay());
         }
+    }
+
+    IEnumerator RespawnControlDelay()
+    {
+        yield return new WaitForSeconds(2f);
+        boosterEnabled = true;
     }
 
     IEnumerator Explosion()
@@ -361,6 +398,7 @@ public class ShipController : MonoBehaviour
     private void FindPlanets()
     {
         earth = GameObject.Find("Earth").transform;
+        astroids = GameObject.Find("Astroids").transform;
     }
 
     private void Laserbeam()
@@ -418,27 +456,79 @@ public class ShipController : MonoBehaviour
 
     private void ForceFieldController()
     {
-        if (rocketExists)
+        if (forceFieldRestart)
         {
-            forcefieldCollider.SetActive(true);
+            StartCoroutine(ForceFieldCycle());
         }
         else
         {
-            forcefieldCollider.SetActive(false);
+            forcefieldCollider.SetActive(true);
         }
-    }   
+    }
+
+    IEnumerator ForceFieldCycle()
+    {
+        forcefieldCollider.GetComponent<Collider2D>().enabled = false;
+        yield return new WaitForSeconds(3f);
+        forcefieldCollider.GetComponent<Collider2D>().enabled = true;
+        forceFieldRestart = false;
+    }
     
     private void FractureTracker()
     {
         for (int i = 0; i < fractures.Count; i++)
         {
-            if (fractures[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints <= 0)
+            if (fractures[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints <= 0 && fractures[i].gameObject.GetComponent<CollisionImpactSound>().playOnce)
             {
-                Destroy(fractures[i].gameObject);
-                fractures.RemoveAt(i);
-                fracturesRB.RemoveAt(i);
+                fractures[i].gameObject.GetComponent<CollisionImpactSound>().playOnce = false;
+
+                if (fractures[i].gameObject.GetComponent<CollisionImpactSound>().impactExplosion != null)
+                {
+                    fractures[i].gameObject.GetComponent<CollisionImpactSound>().debris.Play();
+                    fractures[i].gameObject.GetComponent<CollisionImpactSound>().impactExplosion.SetActive(true);
+                    fractures[i].gameObject.GetComponent<MeshRenderer>().enabled = false;
+                }
+                fractures[i].gameObject.GetComponent<CollisionImpactSound>().triggerDestruction = true; 
             }
-            OrbitalBodyyGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
+        }
+    }
+
+    private void DestroyFractures()
+    {
+        for (int i = 0; i < fractures.Count; i++)
+        {
+            if (fractures[i].gameObject.GetComponent<CollisionImpactSound>().destructionComplete == true)
+            {
+                Destroy(fractures[i]);
+                fracturesRB.RemoveAt(i);
+                fractures.RemoveAt(i);
+            }
+        }
+    }
+
+    void StartLevel()
+    {
+        foreach (Transform debrie in astroids.transform)
+        {
+            if (debrie.tag == "Debries")
+            {
+                debries.Add(debrie.gameObject);
+                debriesRB.Add(debrie.gameObject.GetComponent<Rigidbody2D>());
+                for (int i = 0; i < debries.Count; i++)
+                {
+                    debries[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints = debriesRB[i].mass*40f;
+
+                    Vector2 heading = earth.position - debries[i].transform.position;
+                    float distance = heading.magnitude;
+                    Vector2 gravityDirection = heading / distance;
+                    float gravityForce = debriesRB[i].mass * gravitationalconstant * massEarth / distance;
+
+                    float randomAngleOffset = Random.Range(-20f, 20f);
+                    float randomAnglularVelocity = Random.Range(-10f, 5f);
+                    debriesRB[i].velocity = Mathf.Sqrt((gravityForce * distance) / debriesRB[i].mass)*(Quaternion.Euler(0, 0, -90f + randomAngleOffset) * heading.normalized);
+                    debriesRB[i].angularVelocity = randomAnglularVelocity;
+                }
+            }
         }
     }
 }
