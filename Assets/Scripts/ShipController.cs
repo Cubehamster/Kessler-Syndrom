@@ -68,6 +68,7 @@ public class ShipController : MonoBehaviour
     private Vector3 mousePosition;
     private float startTime;
     private float cameraRefocusSpeed = 0.125f;
+    private LayerMask raycastLayer;
 
     void Start()
     {
@@ -80,6 +81,7 @@ public class ShipController : MonoBehaviour
         forcefieldCollider = GameObject.Find("ForcefieldCollider");
         CameraTracking(earth);
         StartLevel();
+        raycastLayer = LayerMask.GetMask("Debries", "Fractures", "ForceField");
     }
 
     void Update()
@@ -419,7 +421,7 @@ public class ShipController : MonoBehaviour
             LineRenderer LaserLineRenderer = laser.GetComponent<LineRenderer>();
 
             LaserLineRenderer.SetPosition(0, laserSpawn);
-            RaycastHit2D hit = Physics2D.Raycast(laserSpawn, Vector3.Normalize(laserAim) * 10f);
+            RaycastHit2D hit = Physics2D.Raycast(laserSpawn, Vector3.Normalize(laserAim), 10f, raycastLayer);
             if (hit)
             {
                 if (hit.collider)
@@ -485,21 +487,36 @@ public class ShipController : MonoBehaviour
         {
             if (debries[i].GetComponent<CollisionImpactSound>().hitpoints <= 0 && debries[i].GetComponent<CollisionImpactSound>().playOnce)
             {
+                debries[i].GetComponent<Collider2D>().enabled = false;
                 debries[i].GetComponent<CollisionImpactSound>().playOnce = false;
 
                 if (debries[i].GetComponent<CollisionImpactSound>().impactExplosion != null)
                 {
                     debries[i].GetComponent<CollisionImpactSound>().debris.Play();
-                    debries[i].gameObject.GetComponent<CollisionImpactSound>().impactExplosion.SetActive(true);
                     debries[i].GetComponent<PolygonCollider2D>().enabled = false;
-                    for (int n = 0; n < (debries[i].transform.childCount); n++)
-                    {
-                        debries[i].transform.GetChild(n).gameObject.SetActive(true);
-                        debries[i].transform.GetChild(n).gameObject.GetComponent<CollisionImpactSound>().hitpoints = 100.0f;
-                        debries[i].transform.GetChild(n).gameObject.GetComponent<Rigidbody2D>().velocity = debriesRB[i].velocity;
-                        debries[i].transform.GetChild(n).gameObject.transform.parent = astroids;
-                    }
+                    Debug.Log("Hallo");
+
                     debries[i].GetComponent<MeshRenderer>().enabled = false;
+                }
+                for (int n = 0; n < debries[i].transform.childCount; n++)
+                {
+                    debries[i].transform.GetChild(n).gameObject.SetActive(true);
+                }
+                for (int n = 0; n < debries[i].transform.childCount; n++)
+                {
+                    debries[i].transform.GetChild(n).gameObject.SetActive(true);
+                    foreach (Transform fracture in debries[i].transform)
+                    {
+                        if (debries[i].transform.GetChild(0).gameObject.tag == "Fracture")
+                        {
+                            debries[i].transform.GetChild(0).gameObject.GetComponent<Rigidbody2D>().velocity = debriesRB[i].velocity;
+                            debries[i].transform.GetChild(0).GetComponent<CollisionImpactSound>().hitpoints = debries[i].transform.GetChild(0).gameObject.GetComponent<Rigidbody2D>().mass * 40f;
+                            fractures.Add(debries[i].transform.GetChild(0).gameObject);
+                            fracturesRB.Add(debries[i].transform.GetChild(0).gameObject.GetComponent<Rigidbody2D>());
+                            StartCoroutine(CrashChangeLayer(i, fractures, debries, fracturesRB, debriesRB));
+                            debries[i].transform.GetChild(0).gameObject.transform.parent = astroids;
+                        }
+                    }
                 }
                 debries[i].gameObject.GetComponent<CollisionImpactSound>().triggerDestruction = true;
             }

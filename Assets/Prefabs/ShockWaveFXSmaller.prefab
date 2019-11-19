@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8179913147094405243}
   - component: {fileID: 8179913147094405244}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: FXLight
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,7 +87,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: -0.02, w: 1e-45}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -102,7 +102,7 @@ GameObject:
   - component: {fileID: 8179913148163262671}
   - component: {fileID: 8179913148163262705}
   - component: {fileID: 8179913148163262704}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: PostShock
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4865,9 +4865,11 @@ GameObject:
   - component: {fileID: 8179913148832067538}
   - component: {fileID: 8179913148832067540}
   - component: {fileID: 8179913148832067539}
-  m_Layer: 0
+  - component: {fileID: 1892527733062937029}
+  - component: {fileID: 1969423061975001277}
+  m_Layer: 13
   m_Name: ShockWaveFXSmaller
-  m_TagString: Untagged
+  m_TagString: Shockwave
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4879,7 +4881,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8179913148832067537}
-  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: -0.08, y: 0.263, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -9617,3 +9619,39 @@ ParticleSystemRenderer:
   m_Mesh2: {fileID: 0}
   m_Mesh3: {fileID: 0}
   m_MaskInteraction: 0
+--- !u!58 &1892527733062937029
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8179913148832067537}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 1
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: -0}
+  serializedVersion: 2
+  m_Radius: 3.147745
+--- !u!250 &1969423061975001277
+PointEffector2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8179913148832067537}
+  m_Enabled: 1
+  m_UseColliderMask: 1
+  m_ColliderMask:
+    serializedVersion: 2
+    m_Bits: 2560
+  m_ForceMagnitude: 0.1
+  m_ForceVariation: 0.1
+  m_DistanceScale: 1
+  m_ForceSource: 0
+  m_ForceTarget: 0
+  m_ForceMode: 2
+  m_Drag: 0
+  m_AngularDrag: 0

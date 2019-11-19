@@ -21,9 +21,17 @@ public class CollisionImpactSound : MonoBehaviour
         debris = GetComponent<AudioSource>();
         mat = GetComponent<Renderer>().material;
         mat.EnableKeyword("_EMISSION");
-        if (transform.childCount > 0)
+
+        for (int n = 0; n < transform.childCount; n++)
         {
-            impactExplosion = transform.GetChild(0).gameObject;
+            if (transform.GetChild(n).gameObject.tag == "Shockwave")
+            {
+                impactExplosion = transform.GetChild(n).gameObject;
+                impactExplosion.GetComponent<PointEffector2D>().forceMagnitude = transform.gameObject.GetComponent<Rigidbody2D>().mass*0.2f;
+                impactExplosion.GetComponent<PointEffector2D>().forceVariation = transform.gameObject.GetComponent<Rigidbody2D>().mass*0.2f;
+                impactExplosion.SetActive(false);
+            }
+
         }
     }
 
