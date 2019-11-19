@@ -54,7 +54,7 @@ Rigidbody2D:
   m_UseAutoMass: 1
   m_Mass: 0.4295439
   m_LinearDrag: 0
-  m_AngularDrag: 1
+  m_AngularDrag: 0
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_Interpolate: 0
@@ -348,11 +348,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 8654586604795204230}
     m_Modifications:
-    - target: {fileID: 799722322866264461, guid: e7011e6351bddb64480989fbdc864d54,
-        type: 3}
-      propertyPath: m_Name
-      value: Astroid Level 2 (part 2)
-      objectReference: {fileID: 0}
     - target: {fileID: 3746860007170132615, guid: e7011e6351bddb64480989fbdc864d54,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -408,6 +403,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 799722322866264461, guid: e7011e6351bddb64480989fbdc864d54,
+        type: 3}
+      propertyPath: m_Name
+      value: Astroid Level 2 (part 2)
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e7011e6351bddb64480989fbdc864d54, type: 3}
 --- !u!4 &1075019247094454907 stripped
@@ -427,11 +427,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ShockWaveFXSmaller
-      objectReference: {fileID: 0}
-    - target: {fileID: 8179913148832067537, guid: b59b66619576b664cb0d51fe44c24e03,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8179913148832067538, guid: b59b66619576b664cb0d51fe44c24e03,
         type: 3}
@@ -488,25 +483,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8179913147094405244, guid: b59b66619576b664cb0d51fe44c24e03,
+    - target: {fileID: 1892527733062937029, guid: b59b66619576b664cb0d51fe44c24e03,
         type: 3}
-      propertyPath: m_BoundingSphereOverride.x
-      value: 0
+      propertyPath: m_Radius
+      value: 3.062125
       objectReference: {fileID: 0}
     - target: {fileID: 8179913147094405244, guid: b59b66619576b664cb0d51fe44c24e03,
         type: 3}
       propertyPath: m_BoundingSphereOverride.y
-      value: -194.61084
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8179913147094405244, guid: b59b66619576b664cb0d51fe44c24e03,
         type: 3}
       propertyPath: m_BoundingSphereOverride.z
-      value: 7.76e-43
+      value: -0.02
       objectReference: {fileID: 0}
     - target: {fileID: 8179913147094405244, guid: b59b66619576b664cb0d51fe44c24e03,
         type: 3}
       propertyPath: m_BoundingSphereOverride.w
-      value: 1.28e-43
+      value: 1e-45
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b59b66619576b664cb0d51fe44c24e03, type: 3}
@@ -523,16 +518,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 8654586604795204230}
     m_Modifications:
-    - target: {fileID: 408071529785713588, guid: 87ca21ab4c3900e4084663a6cf835365,
-        type: 3}
-      propertyPath: m_Name
-      value: Astroid Level 2 (part 1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 408071529785713588, guid: 87ca21ab4c3900e4084663a6cf835365,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4707254554947768755, guid: 87ca21ab4c3900e4084663a6cf835365,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -586,6 +571,16 @@ PrefabInstance:
     - target: {fileID: 4707254554947768755, guid: 87ca21ab4c3900e4084663a6cf835365,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 408071529785713588, guid: 87ca21ab4c3900e4084663a6cf835365,
+        type: 3}
+      propertyPath: m_Name
+      value: Astroid Level 2 (part 1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 408071529785713588, guid: 87ca21ab4c3900e4084663a6cf835365,
+        type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6589864071321787594, guid: 87ca21ab4c3900e4084663a6cf835365,

@@ -78,6 +78,7 @@ public class ShipController : MonoBehaviour
         FindPlanets();
         SpawnLocation();
         LoadRocketSpawningParameters(0f, 0.0f, true, "Rocket");
+
         forcefieldCollider = GameObject.Find("ForcefieldCollider");
         CameraTracking(earth);
         StartLevel();
@@ -366,6 +367,8 @@ public class ShipController : MonoBehaviour
         {
             rocket = GameObject.Find(rocketName).transform;
             rocketRB = rocket.GetComponent<Rigidbody2D>();
+            rocket.GetComponent<PointEffector2D>().forceMagnitude = rocketRB.mass * 0.15f;
+            rocket.GetComponent<PointEffector2D>().forceVariation = rocketRB.mass * 0.15f;
             Booster = GameObject.Find("Booster");
             rocketModel = GameObject.Find("Tiny Rocket");
             fracturedRocketModel = GameObject.Find("Tiny Rocket(fractured)");
@@ -487,14 +490,13 @@ public class ShipController : MonoBehaviour
         {
             if (debries[i].GetComponent<CollisionImpactSound>().hitpoints <= 0 && debries[i].GetComponent<CollisionImpactSound>().playOnce)
             {
-                debries[i].GetComponent<Collider2D>().enabled = false;
+                debries[i].layer = 13;
                 debries[i].GetComponent<CollisionImpactSound>().playOnce = false;
 
                 if (debries[i].GetComponent<CollisionImpactSound>().impactExplosion != null)
                 {
                     debries[i].GetComponent<CollisionImpactSound>().debris.Play();
-                    debries[i].GetComponent<PolygonCollider2D>().enabled = false;
-                    Debug.Log("Hallo");
+                    debries[i].layer = 13;
 
                     debries[i].GetComponent<MeshRenderer>().enabled = false;
                 }
@@ -554,7 +556,7 @@ public class ShipController : MonoBehaviour
                     float gravityForce = debriesRB[i].mass * gravitationalconstant * massEarth / distance;
 
                     float randomAngleOffset = Random.Range(-20f, 20f);
-                    float randomAnglularVelocity = Random.Range(-10f, 5f);
+                    float randomAnglularVelocity = Random.Range(-15f, 15f);
                     debriesRB[i].velocity = Mathf.Sqrt((gravityForce * distance) / debriesRB[i].mass)*(Quaternion.Euler(0, 0, -90f + randomAngleOffset) * heading.normalized);
                     debriesRB[i].angularVelocity = randomAnglularVelocity;
                 }

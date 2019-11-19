@@ -27,8 +27,8 @@ public class CollisionImpactSound : MonoBehaviour
             if (transform.GetChild(n).gameObject.tag == "Shockwave")
             {
                 impactExplosion = transform.GetChild(n).gameObject;
-                impactExplosion.GetComponent<PointEffector2D>().forceMagnitude = transform.gameObject.GetComponent<Rigidbody2D>().mass*0.2f;
-                impactExplosion.GetComponent<PointEffector2D>().forceVariation = transform.gameObject.GetComponent<Rigidbody2D>().mass*0.2f;
+                impactExplosion.GetComponent<PointEffector2D>().forceMagnitude = transform.gameObject.GetComponent<Rigidbody2D>().mass*0.1f;
+                impactExplosion.GetComponent<PointEffector2D>().forceVariation = transform.gameObject.GetComponent<Rigidbody2D>().mass*0.1f;
                 impactExplosion.SetActive(false);
             }
 
