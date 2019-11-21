@@ -4,92 +4,128 @@ using UnityEngine;
 
 public class ShipController : MonoBehaviour
 {
+    //players rocket prefab
     public GameObject rocketPrefab;
 
+    //reference markers
     private Transform astroids;
     private Transform earth;
+
+    //rocket markers
     private Transform rocket;
     private Rigidbody2D rocketRB;
 
+    //boost parameters
     private float boostPower = 1f;
     private bool boosterEnabled = true;
 
+    //orbital mechanic constants
     private float gravitationalconstant = 0.008f;
     private float massEarth = 250.0f;
 
+    //rocket spawning parameters
     private bool rocketExists = false;
     private Transform spawnLocation;
-    private Vector2 spawndirection;    
+    private Vector2 spawndirection;
 
+    //velocity arror parameters
     private LineRenderer velocityArrowLR;
     private Transform velocityArrowEnd;
     private GameObject VelocityArrow;
-    private float PercentHead = 0.2f;
 
+    //force arrow parameters
     private LineRenderer ForceArrowLR;
     private GameObject ForceArrow;
     private Transform ForceArrowEnd;
 
+    //arrowheadsize
+    private float PercentHead = 0.2f;
+
+    //orientation controls
     private GameObject Booster;
     private Quaternion rotation;
     private bool isTracking = true;
     private float rotationspeed = 5f;
 
+    //rocketfuel parameters
     public RectTransform Fuelbar;
     private float FuelPercentage = 1.0f;
-    private float FuelConsumptionRate = -0.03f;
+    private float FuelConsumptionRate = -0.02f;
     private float RefuelingRate = 0.1f;
 
+    //crash parameters
     private GameObject fracturedRocketModel;
     [SerializeField] private GameObject rocketModel;
     private bool hasCrashed = false;
     private bool hasLanded = false;
     private bool refueling = false;
     private bool performOnesForCrash = true;
+
+    //debries lists
     public List<GameObject> fractures;
     public List<GameObject> debries;
     public List<Rigidbody2D> fracturesRB;
     public List<Rigidbody2D> debriesRB;
 
+    //camera parameters
     private Transform mainCamera;
     private Camera rocketCamera;
     private float zoomLevel = 5f;
     private float zoomDamp = 5.0f;
+    private float cameraRefocusSpeed = 0.125f;
 
+    //laser parameters
     private GameObject laser;
     private GameObject beamHit;
     private GameObject laserSystem;
-    private float laserFuelCost = -0.03f;
-    private float laserDmg = 2.0f;
+    private float laserFuelCost = -0.02f;
+    private float laserDmg = 1.8f;
+    private LayerMask raycastLayer;
 
+    //forcefield parameters
     private GameObject forcefieldCollider;
     private bool forceFieldRestart = false;
 
+    //mousecontrol marker
     private Vector3 mousePosition;
-    private float startTime;
-    private float cameraRefocusSpeed = 0.125f;
-    private LayerMask raycastLayer;
+
+    //debries health parameters
+    private float hpSizePower = 0.7f;
+    private float hpRecoverRate = 0.02f;
 
     void Start()
     {
+        //find important objects in scene
         mainCamera = GameObject.FindWithTag("MainCamera").transform;
+        forcefieldCollider = GameObject.Find("ForcefieldCollider");
+
+        //find orbital parents needed for lists
+        FindPlanets();
+
+        //get cameracomponent
         rocketCamera = mainCamera.gameObject.GetComponent<Camera>();
 
-        FindPlanets();
+        //set spawnlocation
         SpawnLocation();
+
+        //load starting rocketparameters
         LoadRocketSpawningParameters(0f, 0.0f, true, "Rocket");
 
-        forcefieldCollider = GameObject.Find("ForcefieldCollider");
+        //set camera to track earth inintially
         CameraTracking(earth);
+
+        //initialize all the astroids start velocity, angular velocity, rigidbody mass and hitpoints
         StartLevel();
-        raycastLayer = LayerMask.GetMask("Debries", "Fractures", "ForceField");
+
+        //setup mask for laser
+        raycastLayer = LayerMask.GetMask("Debries", "Fractures", "ForceField", "Default");
     }
 
     void Update()
     {
-        LaserControls();    
+        LaserControls();
         CollisionTracker();
-        Refuel();        
+        Refuel();
         HandleZoom();
         Speed();
         Respawn();
@@ -97,31 +133,34 @@ public class ShipController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        RocketParent();
         ShipBooster();
         DestroyFractures();
-        Rockettracking();
         DebriesTracker();
         Crash();
+        Rockettracking();
         Forces();
         ForceFieldController();
     }
 
+    //Does all the orbital mechanics for the rocket, fractures and debries
     void Forces()
     {
         if (rocketExists)
         {
-            OrbitalBodyyGravity(earth, massEarth, rocket, rocketRB);
+            OrbitalBodyGravity(earth, massEarth, rocket, rocketRB);
         }
         for (int i = 0; i < fractures.Count; i++)
         {
-            OrbitalBodyyGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
+            OrbitalBodyGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
         }
         for (int i = 0; i < debries.Count; i++)
         {
-            OrbitalBodyyGravity(earth, massEarth, debries[i].transform, debriesRB[i]);
+            OrbitalBodyGravity(earth, massEarth, debries[i].transform, debriesRB[i]);
         }
     }
 
+    //handles mouselook and force booster when there is fuel
     void ShipBooster()
     {
         if (rocketExists)
@@ -151,6 +190,7 @@ public class ShipController : MonoBehaviour
         }
     }
 
+    //draws a velocity vector based on rocket speed
     void Speed()
     {
         if (rocketExists)
@@ -171,6 +211,7 @@ public class ShipController : MonoBehaviour
         }
     }
 
+    //draw function used for the drawing of arrows
     public void DrawArrow(GameObject ArrowGameObject, Transform ArrowEnd, Vector3 ArrowVector, LineRenderer ArrowLR)
     {
         ArrowGameObject.SetActive(true);
@@ -189,11 +230,13 @@ public class ShipController : MonoBehaviour
         ArrowLR.SetPositions(points);
     }
 
+    //fuel drain when boosting
     private void UseFuel()
     {
         FuelChange(FuelConsumptionRate);
     }
 
+    //fuel gain when refueling
     private void Refuel()
     {
         if (refueling && rocketExists)
@@ -202,6 +245,7 @@ public class ShipController : MonoBehaviour
         }
     }
 
+    //handles crash and suicide
     private void Crash()
     {
         if ((Input.GetKey("b") && performOnesForCrash) || (hasCrashed && performOnesForCrash))
@@ -224,14 +268,15 @@ public class ShipController : MonoBehaviour
                 {
                     fractures.Add(fracture.gameObject);
                     fracturesRB.Add(fracture.gameObject.GetComponent<Rigidbody2D>());
-                }                
+                }
             }
             for (int i = 0; i < fractures.Count; i++)
             {
-                if(fractures[i].transform.parent != earth)
+                if (fractures[i].transform.parent != earth)
                 {
                     fracturesRB[i].velocity = rocketRB.velocity;
-                    fractures[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints = fracturesRB[i].mass;
+                    fractures[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints = Mathf.Pow((fracturesRB[i].mass * 80f), hpSizePower);
+                    fractures[i].gameObject.GetComponent<CollisionImpactSound>().hpSizePower = hpSizePower;
                     StartCoroutine(CrashChangeLayer(i, fractures, debries, fracturesRB, debriesRB));
                     fractures[i].transform.parent = earth;
                 }
@@ -239,19 +284,23 @@ public class ShipController : MonoBehaviour
         }
     }
 
+    //switches fractures how can't collide with eachother during an explosion to the debries layer where things can collide without eachother
     IEnumerator CrashChangeLayer(int i, List<GameObject> listFrom, List<GameObject> listTo, List<Rigidbody2D> listFromRB, List<Rigidbody2D> listToRB)
     {
         yield return new WaitForSeconds(1f);
-        listFrom[0].tag = "Debries";
-        listFrom[0].layer = 12;
-        listTo.Add(fractures[0].gameObject);
-        listToRB.Add(fracturesRB[0]);
-        listFromRB.RemoveAt(0);
-        listFrom.RemoveAt(0);
+        if (listFrom[0] !=null)
+        {
+            listFrom[0].tag = "Debries";
+            listFrom[0].layer = 12;
+            listTo.Add(fractures[0].gameObject);
+            listToRB.Add(fracturesRB[0]);
+            listFromRB.RemoveAt(0);
+            listFrom.RemoveAt(0);
+        }
     }
 
-
-    private void OrbitalBodyyGravity(Transform gravitySource, float gravitySourceMass, Transform gravityTargetObject, Rigidbody2D targetRigidbody)
+    //function that handles the orbital gravity of given targets
+    private void OrbitalBodyGravity(Transform gravitySource, float gravitySourceMass, Transform gravityTargetObject, Rigidbody2D targetRigidbody)
     {
         Vector3 heading = gravitySource.position - gravityTargetObject.position;
         float distance = heading.magnitude;
@@ -268,7 +317,7 @@ public class ShipController : MonoBehaviour
                 if (hasCrashed == false && hasLanded == false)
                 {
                     ForceArrow.SetActive(true);
-                    DrawArrow(ForceArrow, ForceArrowEnd, gravityForceVector/rocketRB.mass * 4, ForceArrowLR);
+                    DrawArrow(ForceArrow, ForceArrowEnd, gravityForceVector / rocketRB.mass * 4, ForceArrowLR);
                 }
                 else
                 {
@@ -278,7 +327,8 @@ public class ShipController : MonoBehaviour
 
         }
     }
-    
+
+    //handles the camerazoom of the orthagonal camera
     private void HandleZoom()
     {
         float zoomChangeAmount = 80f;
@@ -294,6 +344,7 @@ public class ShipController : MonoBehaviour
         rocketCamera.orthographicSize = Mathf.Lerp(rocketCamera.orthographicSize, zoomLevel, zoomDamp * Time.deltaTime);
     }
 
+    //keeps track of what the camera should be looking at
     private void Rockettracking()
     {
         if (hasCrashed == false && rocketExists)
@@ -307,12 +358,14 @@ public class ShipController : MonoBehaviour
 
     }
 
+    //switches camera to earth after 3 seconds
     IEnumerator CameraSwitchEarth()
     {
         yield return new WaitForSeconds(3f);
         CameraTracking(earth);
     }
 
+    //function that handles fuelchange based on ability
     private void FuelChange(float FuelRate)
     {
         FuelPercentage += FuelRate * Time.deltaTime;
@@ -320,8 +373,13 @@ public class ShipController : MonoBehaviour
         FuelPercentage = Mathf.Clamp(FuelPercentage, 0.0f, 1.0f);
     }
 
+    //initializes a respawn when pressing r while dead
     private void Respawn()
     {
+        if (!boosterEnabled && rocketExists)
+        {
+            rocketModel.GetComponent<CollisionDetector>().hasLanded = true;
+        }
         if (Input.GetKey("r") && rocketExists == false)
         {
             GameObject Rocket = Instantiate(rocketPrefab, spawnLocation.position, spawnLocation.rotation);
@@ -335,21 +393,24 @@ public class ShipController : MonoBehaviour
         }
     }
 
+    //gives a 2 second delay after resapwn
     IEnumerator RespawnControlDelay()
     {
         yield return new WaitForSeconds(2f);
         boosterEnabled = true;
     }
 
+    //manages the child objects of a rocket during and after crash
     IEnumerator Explosion()
     {
         Destroy(ForceArrow);
         Destroy(VelocityArrow);
         yield return new WaitForSeconds(3f);
         rocketExists = false;
-        Destroy(rocket.gameObject);        
+        Destroy(rocket.gameObject);
     }
 
+    //checks the condition of the rocket in the collisiondetector script that is on the rocket
     private void CollisionTracker()
     {
         if (rocketExists)
@@ -360,6 +421,7 @@ public class ShipController : MonoBehaviour
         }
     }
 
+    //function that controls the spawning condition of the rocket
     private void LoadRocketSpawningParameters(float startSpeedX, float startSpeedY, bool rocketExistsAtStart, string rocketName)
     {
         rocketExists = rocketExistsAtStart;
@@ -392,12 +454,13 @@ public class ShipController : MonoBehaviour
         }
     }
 
-
+    //finds the spawnlocation
     private void SpawnLocation()
     {
         spawnLocation = GameObject.Find("SpawnLocation").transform;
     }
 
+    //handles the camera tracking smoothly for a given target
     private void CameraTracking(Transform target)
     {
         Vector3 targetCamera = new Vector3(target.transform.position.x, target.transform.position.y, -10);
@@ -405,12 +468,14 @@ public class ShipController : MonoBehaviour
         mainCamera.position = smoothedPosition;
     }
 
+    //Find references
     private void FindPlanets()
     {
         earth = GameObject.Find("Earth").transform;
         astroids = GameObject.Find("Astroids").transform;
     }
 
+    //controls the players raycast laserbeam
     private void Laserbeam()
     {
         if (rocketExists)
@@ -440,18 +505,19 @@ public class ShipController : MonoBehaviour
             }
             else
             {
-                LaserLineRenderer.SetPosition(1, laserSpawn + Vector3.Normalize(laserFire - laserSpawn)*4f);
+                LaserLineRenderer.SetPosition(1, laserSpawn + Vector3.Normalize(laserFire - laserSpawn) * 4f);
                 beamHit.SetActive(false);
             }
         }
 
     }
 
+    //determines how the laser is controlled
     private void LaserControls()
     {
         if (rocketExists)
         {
-            if (Input.GetKey(KeyCode.Mouse1))
+            if (Input.GetKey(KeyCode.Mouse1) && FuelPercentage > 0)
             {
                 laserSystem.SetActive(true);
                 Laserbeam();
@@ -464,6 +530,7 @@ public class ShipController : MonoBehaviour
         }
     }
 
+    //controls when or when not the forcefield stops debries from passing through
     private void ForceFieldController()
     {
         if (forceFieldRestart)
@@ -476,6 +543,7 @@ public class ShipController : MonoBehaviour
         }
     }
 
+    //a short cycledelay for the forcefield
     IEnumerator ForceFieldCycle()
     {
         forcefieldCollider.GetComponent<Collider2D>().enabled = false;
@@ -483,11 +551,16 @@ public class ShipController : MonoBehaviour
         forcefieldCollider.GetComponent<Collider2D>().enabled = true;
         forceFieldRestart = false;
     }
-    
+
+    //handles all the debries (so astroid and rocketfractures)
     private void DebriesTracker()
     {
         for (int i = 0; i < debries.Count; i++)
         {
+            if (debries[i].GetComponent<CollisionImpactSound>().hitpoints < Mathf.Pow((debries[i].GetComponent<Rigidbody2D>().mass * 80f), hpSizePower) && debries[i].GetComponent<CollisionImpactSound>().hitpoints > 0)
+            {
+                debries[i].GetComponent<CollisionImpactSound>().hitpoints += Time.deltaTime * hpRecoverRate;
+            }
             if (debries[i].GetComponent<CollisionImpactSound>().hitpoints <= 0 && debries[i].GetComponent<CollisionImpactSound>().playOnce)
             {
                 debries[i].layer = 13;
@@ -512,7 +585,7 @@ public class ShipController : MonoBehaviour
                         if (debries[i].transform.GetChild(0).gameObject.tag == "Fracture")
                         {
                             debries[i].transform.GetChild(0).gameObject.GetComponent<Rigidbody2D>().velocity = debriesRB[i].velocity;
-                            debries[i].transform.GetChild(0).GetComponent<CollisionImpactSound>().hitpoints = debries[i].transform.GetChild(0).gameObject.GetComponent<Rigidbody2D>().mass * 40f;
+                            debries[i].transform.GetChild(0).GetComponent<CollisionImpactSound>().hitpoints = Mathf.Pow((debries[i].transform.GetChild(0).gameObject.GetComponent<Rigidbody2D>().mass * 80f), hpSizePower);
                             fractures.Add(debries[i].transform.GetChild(0).gameObject);
                             fracturesRB.Add(debries[i].transform.GetChild(0).gameObject.GetComponent<Rigidbody2D>());
                             StartCoroutine(CrashChangeLayer(i, fractures, debries, fracturesRB, debriesRB));
@@ -525,6 +598,7 @@ public class ShipController : MonoBehaviour
         }
     }
 
+    //function that handles debries destruction
     private void DestroyFractures()
     {
         for (int i = 0; i < debries.Count; i++)
@@ -538,6 +612,7 @@ public class ShipController : MonoBehaviour
         }
     }
 
+    //initializes the startconditions of all the astroids in the scene
     void StartLevel()
     {
         foreach (Transform debrie in astroids.transform)
@@ -548,7 +623,8 @@ public class ShipController : MonoBehaviour
                 debriesRB.Add(debrie.gameObject.GetComponent<Rigidbody2D>());
                 for (int i = 0; i < debries.Count; i++)
                 {
-                    debries[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints = debriesRB[i].mass*40f;
+                    debries[i].gameObject.GetComponent<CollisionImpactSound>().hitpoints = Mathf.Pow((debriesRB[i].mass * 80f), hpSizePower);
+                    debries[i].gameObject.GetComponent<CollisionImpactSound>().hpSizePower = hpSizePower;
 
                     Vector2 heading = earth.position - debries[i].transform.position;
                     float distance = heading.magnitude;
@@ -556,11 +632,27 @@ public class ShipController : MonoBehaviour
                     float gravityForce = debriesRB[i].mass * gravitationalconstant * massEarth / distance;
 
                     float randomAngleOffset = Random.Range(-20f, 20f);
-                    float randomAnglularVelocity = Random.Range(-15f, 15f);
-                    debriesRB[i].velocity = Mathf.Sqrt((gravityForce * distance) / debriesRB[i].mass)*(Quaternion.Euler(0, 0, -90f + randomAngleOffset) * heading.normalized);
+                    float randomAnglularVelocity = Random.Range(-18f, 18f);
+                    debriesRB[i].velocity = Mathf.Sqrt((gravityForce * distance) / debriesRB[i].mass) * (Quaternion.Euler(0, 0, -90f + randomAngleOffset) * heading.normalized);
                     debriesRB[i].angularVelocity = randomAnglularVelocity;
                 }
             }
         }
+    }
+
+    void RocketParent()
+    {
+        if (rocketExists)
+        {
+            if ((rocket.position - earth.position).magnitude > 25f)
+            {
+                rocket.parent = transform;
+            }
+            else
+            {
+                rocket.parent = earth;
+            }
+        }
+
     }
 }

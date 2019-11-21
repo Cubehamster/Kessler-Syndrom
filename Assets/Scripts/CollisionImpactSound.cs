@@ -14,6 +14,7 @@ public class CollisionImpactSound : MonoBehaviour
 
     private Vector2 velocityBeforePhysicsUpdate;
     public float hitpoints;
+    public float hpSizePower = 0.9f;
 
     private void Awake()
     {
@@ -27,8 +28,8 @@ public class CollisionImpactSound : MonoBehaviour
             if (transform.GetChild(n).gameObject.tag == "Shockwave")
             {
                 impactExplosion = transform.GetChild(n).gameObject;
-                impactExplosion.GetComponent<PointEffector2D>().forceMagnitude = transform.gameObject.GetComponent<Rigidbody2D>().mass*0.1f;
-                impactExplosion.GetComponent<PointEffector2D>().forceVariation = transform.gameObject.GetComponent<Rigidbody2D>().mass*0.1f;
+                impactExplosion.GetComponent<PointEffector2D>().forceMagnitude = transform.gameObject.GetComponent<Rigidbody2D>().mass * 0.1f;
+                impactExplosion.GetComponent<PointEffector2D>().forceVariation = transform.gameObject.GetComponent<Rigidbody2D>().mass * 0.1f;
                 impactExplosion.SetActive(false);
             }
 
@@ -42,12 +43,12 @@ public class CollisionImpactSound : MonoBehaviour
         {
             StartCoroutine(DestroyObject());
         }
-        intensity = ((transform.gameObject.GetComponent<Rigidbody2D>().mass * 40.0f) - hitpoints) / (transform.gameObject.GetComponent<Rigidbody2D>().mass * 40.0f);
+        intensity = ((Mathf.Pow((transform.gameObject.GetComponent<Rigidbody2D>().mass * 80f), hpSizePower)) - hitpoints) / (Mathf.Pow((transform.gameObject.GetComponent<Rigidbody2D>().mass * 80f), hpSizePower));
         if (intensity < 0)
         {
             intensity = 0f;
         }
-        mat.SetColor("_EmissionColor", new Color(0.7f, 0.15f, 0.15f, 1.0f) * 0.5f * Mathf.Pow(2f, (-8f + 8f *intensity)));
+        mat.SetColor("_EmissionColor", new Color(0.7f, 0.15f, 0.15f, 1.0f) * 0.5f * Mathf.Pow(2f, (-7f + 9f * intensity)));
     }
 
     IEnumerator DestroyObject()
@@ -63,11 +64,13 @@ public class CollisionImpactSound : MonoBehaviour
         if (other.gameObject.GetComponent<Rigidbody2D>())
         {
             relativespeed = Vector2.Distance(other.gameObject.GetComponent<Rigidbody2D>().velocity, velocityBeforePhysicsUpdate);
+            hitpoints -= 2f * Mathf.Pow(relativespeed, 3f) * transform.gameObject.GetComponent<Rigidbody2D>().mass / (transform.gameObject.GetComponent<Rigidbody2D>().mass + other.gameObject.GetComponent<Rigidbody2D>().mass);
         }
         else
         {
             relativespeed = Vector2.Distance(velocityBeforePhysicsUpdate, new Vector2(0f, 0f));
+            hitpoints -= 4f * Mathf.Pow(velocityBeforePhysicsUpdate.magnitude, 3f);
         }
-        hitpoints -= 4f * Mathf.Pow(relativespeed,4f);
+
     }
 }
