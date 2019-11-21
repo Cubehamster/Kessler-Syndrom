@@ -86,7 +86,7 @@ public class ShipController : MonoBehaviour
     private GameObject laserSystem;
     private float laserFuelCost = -0.02f;
     private float laserDmg = 2.8f;
-    private float laserLength = 5.0f;
+    private float laserLength = 2.5f;
     private LayerMask raycastLayer;
 
     //forcefield parameters
@@ -298,7 +298,7 @@ public class ShipController : MonoBehaviour
     //switches fractures how can't collide with eachother during an explosion to the debries layer where things can collide without eachother
     IEnumerator CrashChangeLayer(int i, List<GameObject> listFrom, List<GameObject> listTo, List<Rigidbody2D> listFromRB, List<Rigidbody2D> listToRB)
     {
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.6f);
         if (listFrom[0] != null)
         {
             listFrom[0].tag = "Debries";
@@ -516,7 +516,7 @@ public class ShipController : MonoBehaviour
             }
             else
             {
-                LaserLineRenderer.SetPosition(1, laserSpawn + Vector3.Normalize(laserFire - laserSpawn) * 4f);
+                LaserLineRenderer.SetPosition(1, laserSpawn + Vector3.Normalize(laserFire - laserSpawn) * laserLength);
                 beamHit.SetActive(false);
             }
         }
