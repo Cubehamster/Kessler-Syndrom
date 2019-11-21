@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class ShipController : MonoBehaviour
@@ -67,6 +68,11 @@ public class ShipController : MonoBehaviour
     public List<Rigidbody2D> fracturesRB;
     public List<Rigidbody2D> debriesRB;
 
+    //Objectives and Score
+    public List<GameObject> objectives;
+    public GameObject score;
+    public TextMeshPro scoreText;
+
     //camera parameters
     private Transform mainCamera;
     private Camera rocketCamera;
@@ -79,7 +85,8 @@ public class ShipController : MonoBehaviour
     private GameObject beamHit;
     private GameObject laserSystem;
     private float laserFuelCost = -0.02f;
-    private float laserDmg = 1.8f;
+    private float laserDmg = 2.8f;
+    private float laserLength = 5.0f;
     private LayerMask raycastLayer;
 
     //forcefield parameters
@@ -90,7 +97,7 @@ public class ShipController : MonoBehaviour
     private Vector3 mousePosition;
 
     //debries health parameters
-    private float hpSizePower = 0.7f;
+    private float hpSizePower = 0.6f;
     private float hpRecoverRate = 0.02f;
 
     void Start()
@@ -117,6 +124,9 @@ public class ShipController : MonoBehaviour
         //initialize all the astroids start velocity, angular velocity, rigidbody mass and hitpoints
         StartLevel();
 
+        //get access to score
+        scoreText = score.GetComponent<TextMeshPro>();
+
         //setup mask for laser
         raycastLayer = LayerMask.GetMask("Debries", "Fractures", "ForceField", "Default");
     }
@@ -129,6 +139,7 @@ public class ShipController : MonoBehaviour
         HandleZoom();
         Speed();
         Respawn();
+        ObjectiveTracker();
     }
 
     private void FixedUpdate()
@@ -288,7 +299,7 @@ public class ShipController : MonoBehaviour
     IEnumerator CrashChangeLayer(int i, List<GameObject> listFrom, List<GameObject> listTo, List<Rigidbody2D> listFromRB, List<Rigidbody2D> listToRB)
     {
         yield return new WaitForSeconds(1f);
-        if (listFrom[0] !=null)
+        if (listFrom[0] != null)
         {
             listFrom[0].tag = "Debries";
             listFrom[0].layer = 12;
@@ -489,7 +500,7 @@ public class ShipController : MonoBehaviour
             LineRenderer LaserLineRenderer = laser.GetComponent<LineRenderer>();
 
             LaserLineRenderer.SetPosition(0, laserSpawn);
-            RaycastHit2D hit = Physics2D.Raycast(laserSpawn, Vector3.Normalize(laserAim), 10f, raycastLayer);
+            RaycastHit2D hit = Physics2D.Raycast(laserSpawn, Vector3.Normalize(laserAim), laserLength, raycastLayer);
             if (hit)
             {
                 if (hit.collider)
@@ -654,5 +665,19 @@ public class ShipController : MonoBehaviour
             }
         }
 
+    }
+
+    void ObjectiveTracker()
+    {
+        scoreText.text = $"Debries: {objectives.Count}";
+    }
+
+    public void OnTriggerEnter2D(Collider2D col)
+    {
+        objectives.Add(col.gameObject);
+    }
+    public void OnTriggerExit2D(Collider2D col)
+    {
+        objectives.Remove(col.gameObject);
     }
 }
