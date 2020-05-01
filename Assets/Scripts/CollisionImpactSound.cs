@@ -10,7 +10,7 @@ public class CollisionImpactSound : MonoBehaviour
     public bool triggerDestruction = false;
     public bool destructionComplete = false;
     [SerializeField] private float intensity;
-    private Material mat;
+    [SerializeField] private Material mat;
 
     private Vector2 velocityBeforePhysicsUpdate;
     public float hitpoints;
@@ -20,16 +20,31 @@ public class CollisionImpactSound : MonoBehaviour
     {
         playOnce = true;
         debris = GetComponent<AudioSource>();
-        mat = GetComponent<Renderer>().material;
-        mat.EnableKeyword("_EMISSION");
+        if(GetComponent<Renderer>() !=null)
+        {
+            mat = GetComponent<Renderer>().material;
+            mat.EnableKeyword("_EMISSION");
+        }
+        else
+        {
+            for (int n = 0; n < transform.childCount; n++)
+            {
+                if (transform.GetChild(n).gameObject.tag == "Untagged")
+                {
+                    mat = transform.GetChild(n).gameObject.GetComponent<Renderer>().material;
+                    mat.EnableKeyword("_EMISSION");
+                }
+
+            }
+        }
 
         for (int n = 0; n < transform.childCount; n++)
         {
             if (transform.GetChild(n).gameObject.tag == "Shockwave")
             {
                 impactExplosion = transform.GetChild(n).gameObject;
-                impactExplosion.GetComponent<PointEffector2D>().forceMagnitude = transform.gameObject.GetComponent<Rigidbody2D>().mass * 0.1f;
-                impactExplosion.GetComponent<PointEffector2D>().forceVariation = transform.gameObject.GetComponent<Rigidbody2D>().mass * 0.1f;
+                impactExplosion.GetComponent<PointEffector2D>().forceMagnitude = transform.gameObject.GetComponent<Rigidbody2D>().mass * 0.2f;
+                impactExplosion.GetComponent<PointEffector2D>().forceVariation = transform.gameObject.GetComponent<Rigidbody2D>().mass * 0.2f;
                 impactExplosion.SetActive(false);
             }
 
@@ -64,7 +79,7 @@ public class CollisionImpactSound : MonoBehaviour
         if (other.gameObject.GetComponent<Rigidbody2D>())
         {
             relativespeed = Vector2.Distance(other.gameObject.GetComponent<Rigidbody2D>().velocity, velocityBeforePhysicsUpdate);
-            hitpoints -= 2f * Mathf.Pow(relativespeed, 3f) * transform.gameObject.GetComponent<Rigidbody2D>().mass / (transform.gameObject.GetComponent<Rigidbody2D>().mass + other.gameObject.GetComponent<Rigidbody2D>().mass);
+            hitpoints -= 4f * Mathf.Pow(relativespeed, 3f) * other.gameObject.GetComponent<Rigidbody2D>().mass / (transform.gameObject.GetComponent<Rigidbody2D>().mass + other.gameObject.GetComponent<Rigidbody2D>().mass);
         }
         else
         {

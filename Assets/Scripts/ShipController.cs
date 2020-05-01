@@ -86,7 +86,7 @@ public class ShipController : MonoBehaviour
     private GameObject laserSystem;
     private float laserFuelCost = -0.02f;
     private float laserDmg = 2.8f;
-    private float laserLength = 2.5f;
+    private float laserLength = 4.0f;
     private LayerMask raycastLayer;
 
     //forcefield parameters
@@ -581,8 +581,14 @@ public class ShipController : MonoBehaviour
                 {
                     debries[i].GetComponent<CollisionImpactSound>().debris.Play();
                     debries[i].layer = 13;
+                    if (debries[i].GetComponent<MeshRenderer>() != null)
+                    {
+                        debries[i].GetComponent<MeshRenderer>().enabled = false;
+                    }
+                    else {
+                        debries[i].GetComponentInChildren<MeshRenderer>().enabled = false;
+                    }
 
-                    debries[i].GetComponent<MeshRenderer>().enabled = false;
                 }
                 for (int n = 0; n < debries[i].transform.childCount; n++)
                 {
