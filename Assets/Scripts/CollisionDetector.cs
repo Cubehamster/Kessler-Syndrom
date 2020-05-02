@@ -26,7 +26,10 @@ public class CollisionDetector : MonoBehaviour
         }
         else if (speed < 0.55f && (other.collider.tag == "Planet" || other.collider.tag == "Refuel"))
         {
-            hasLanded = true;
+            if(other.collider.tag == "Planet" || other.collider.tag == "Refuel")
+            {
+                hasLanded = true;
+            }
             if (other.collider.tag == "Refuel")
             {
                 refueling = true;

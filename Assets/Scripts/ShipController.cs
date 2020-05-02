@@ -56,10 +56,10 @@ public class ShipController : MonoBehaviour
 
     //crash parameters
     private GameObject fracturedRocketModel;
-    [SerializeField] private GameObject rocketModel;
+    [SerializeField] public GameObject rocketModel;
     private bool hasCrashed = false;
-    private bool hasLanded = false;
-    private bool refueling = false;
+    public bool hasLanded = false;
+    public bool refueling = false;
     private bool performOnesForCrash = true;
 
     //debries lists

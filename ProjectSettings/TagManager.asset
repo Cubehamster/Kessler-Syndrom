@@ -13,6 +13,7 @@ TagManager:
   - LaserSpawn
   - Debries
   - Shockwave
+  - RefuelPad
   layers:
   - Default
   - TransparentFX
