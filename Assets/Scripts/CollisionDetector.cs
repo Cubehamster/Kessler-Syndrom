@@ -11,10 +11,18 @@ public class CollisionDetector : MonoBehaviour
 
     private float speed;
     private Vector3 velocityBeforePhysicsUpdate;
+    float impactAngle = 0;
 
-
-    private void OnCollisionEnter2D(Collision2D other)
+    private void OnCollisionStay2D(Collision2D other)
     {
+
+        if (other.collider.tag == "Planet" || other.collider.tag == "Refuel")
+        {
+            Vector2 rocketVector = transform.up;
+            Vector2 colliderVector = transform.position - other.transform.position;
+            impactAngle = Mathf.Abs(Vector2.Angle(rocketVector, colliderVector));
+            Debug.Log(impactAngle);
+        }
         float relativespeed = 0f;
         if (other.gameObject.GetComponent<Rigidbody2D>())
         {
@@ -24,7 +32,7 @@ public class CollisionDetector : MonoBehaviour
                 hasCrashed = true;
             }
         }
-        else if (speed < 0.55f && (other.collider.tag == "Planet" || other.collider.tag == "Refuel"))
+        else if (speed < 0.55f && (other.collider.tag == "Planet" || other.collider.tag == "Refuel") && impactAngle < 100)
         {
             if(other.collider.tag == "Planet" || other.collider.tag == "Refuel")
             {

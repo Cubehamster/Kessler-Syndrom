@@ -85,8 +85,8 @@ public class ShipController : MonoBehaviour
     private GameObject beamHit;
     private GameObject laserSystem;
     private float laserFuelCost = -0.02f;
-    private float laserDmg = 2.8f;
-    private float laserLength = 4.0f;
+    private float laserDmg = 5f;
+    private float laserLength = 5.0f;
     private LayerMask raycastLayer;
 
     //forcefield parameters
@@ -259,7 +259,7 @@ public class ShipController : MonoBehaviour
     //handles crash and suicide
     private void Crash()
     {
-        if ((Input.GetKey("b") && performOnesForCrash) || (hasCrashed && performOnesForCrash))
+        if ((Input.GetKey(KeyCode.Mouse0) && Input.GetKey(KeyCode.Mouse1) && performOnesForCrash && FuelPercentage == 0) || (hasCrashed && performOnesForCrash))
         {
             performOnesForCrash = false;
             forceFieldRestart = true;
@@ -391,7 +391,7 @@ public class ShipController : MonoBehaviour
         {
             rocketModel.GetComponent<CollisionDetector>().hasLanded = true;
         }
-        if (Input.GetKey("r") && rocketExists == false)
+        if (Input.GetKey(KeyCode.Mouse1) && rocketExists == false)
         {
             GameObject Rocket = Instantiate(rocketPrefab, spawnLocation.position, spawnLocation.rotation);
             Rocket.transform.parent = earth;
@@ -528,7 +528,7 @@ public class ShipController : MonoBehaviour
     {
         if (rocketExists)
         {
-            if (Input.GetKey(KeyCode.Mouse1) && FuelPercentage > 0)
+            if (Input.GetKey(KeyCode.Mouse1) && FuelPercentage > 0 && FuelPercentage < 1 && !refueling && !hasCrashed)
             {
                 laserSystem.SetActive(true);
                 Laserbeam();
@@ -675,7 +675,7 @@ public class ShipController : MonoBehaviour
 
     void ObjectiveTracker()
     {
-        scoreText.text = $"Debries: {objectives.Count}";
+        //scoreText.text = $"Debries: {objectives.Count}";
     }
 
     public void OnTriggerEnter2D(Collider2D col)

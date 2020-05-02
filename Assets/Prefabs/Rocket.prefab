@@ -3170,8 +3170,8 @@ Light:
   serializedVersion: 9
   m_Type: 2
   m_Color: {r: 0.82745105, g: 0.18823531, b: 0.30980393, a: 1}
-  m_Intensity: 0.02
-  m_Range: 3
+  m_Intensity: 15
+  m_Range: 10
   m_SpotAngle: 70
   m_InnerSpotAngle: 7
   m_CookieSize: 10
@@ -3215,7 +3215,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 8.24e-43, y: 1.19351e-40, z: 8.24e-43, w: 2.4292566e-16}
+  m_BoundingSphereOverride: {x: 0, y: 2.3509887e-38, z: 0.0000000018777087, w: 0.0000000037252903}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -3903,7 +3903,7 @@ Light:
   serializedVersion: 9
   m_Type: 2
   m_Color: {r: 1, g: 0.43137258, b: 0.76470596, a: 1}
-  m_Intensity: 1
+  m_Intensity: 15
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -18847,12 +18847,17 @@ PrefabInstance:
     - target: {fileID: 4356229741270192846, guid: 900371ebb7bd36c40a8303fa9f52257c,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.20000009
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 4356229741270192846, guid: 900371ebb7bd36c40a8303fa9f52257c,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.2000001
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4356229741270192846, guid: 900371ebb7bd36c40a8303fa9f52257c,
+        type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 7038285223055984253, guid: 900371ebb7bd36c40a8303fa9f52257c,
         type: 3}
@@ -19462,17 +19467,17 @@ PrefabInstance:
     - target: {fileID: 4356229741270192846, guid: 900371ebb7bd36c40a8303fa9f52257c,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.1
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 4356229741270192846, guid: 900371ebb7bd36c40a8303fa9f52257c,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.100000046
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 4356229741270192846, guid: 900371ebb7bd36c40a8303fa9f52257c,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.10000005
+      value: 0.4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 900371ebb7bd36c40a8303fa9f52257c, type: 3}
