@@ -13,13 +13,16 @@ public class ObjectiveLevel1 : MonoBehaviour
     bool safetyCheck = false;
     bool checking = false;
     bool levelCompleted = false;
+    bool playOnce = false;
     public TextMeshPro scoreText;
+    public TextMeshPro missionAccomplished;
 
     // Start is called before the first frame update
     void Awake()
     {
         level = Object.FindObjectOfType<LevelManager>();
         WayPointTarget_2.gameObject.SetActive(false);
+        StartCoroutine(LevelText(missionAccomplished));
     }
 
     // Update is called once per frame
@@ -34,11 +37,17 @@ public class ObjectiveLevel1 : MonoBehaviour
                     scoreText.text = "Fly to Waypoint";
                 }
        
-                if ((WayPointTarget_1.position - gameObject.GetComponent<ShipController>().rocketModel.transform.position).magnitude < 0.5f)
+                if ((WayPointTarget_1.position - gameObject.GetComponent<ShipController>().rocketModel.transform.position).magnitude < 0.7f)
                 {
-                    WayPointTarget_1.gameObject.SetActive(false);
-                    WayPointTarget_2.gameObject.SetActive(true);
-                    WayPoint_1 = true;
+                    if (!playOnce)
+                    {
+                        WayPointTarget_2.gameObject.SetActive(true);
+                        WayPoint_1 = true;
+                        playOnce = true;
+                        StartCoroutine(DisableDelayed(WayPointTarget_1.gameObject));
+                    }
+               
+                    
                     if (!WayPoint_2)
                     {
                         scoreText.text = "Land Safely";
@@ -49,7 +58,7 @@ public class ObjectiveLevel1 : MonoBehaviour
             if (WayPointTarget_2 != null)
             {
                 
-                if ((WayPointTarget_2.position - gameObject.GetComponent<ShipController>().rocketModel.transform.position).magnitude < 0.5f)
+                if ((WayPointTarget_2.position - gameObject.GetComponent<ShipController>().rocketModel.transform.position).magnitude < 0.7f)
                 {
                     if (gameObject.GetComponent<ShipController>().refueling  && !checking && gameObject.GetComponent<ShipController>().hasLanded && WayPoint_1)
                     {
@@ -58,12 +67,19 @@ public class ObjectiveLevel1 : MonoBehaviour
                     }
                     if (safetyCheck)
                     {
-                        WayPointTarget_2.gameObject.SetActive(false);
-                        WayPoint_2 = true;
-                        if(WayPoint_1 && WayPoint_2)
+                        if (!playOnce)
+                        {
+                            WayPoint_2 = true;
+                            playOnce = true;
+                            StartCoroutine(DisableDelayed(WayPointTarget_2.gameObject));
+                        }
+                       
+
+                        if (WayPoint_1 && WayPoint_2)
                         {
                             levelCompleted = true;
-                            scoreText.text = "Mission Completed";
+                            scoreText.text = " ";
+                            missionAccomplished.text = "Mission Accomplished";
                         }
                     }
                    
@@ -80,6 +96,7 @@ public class ObjectiveLevel1 : MonoBehaviour
                 WayPoint_1 = false;
                 checking = false;
                 safetyCheck = false;
+                playOnce = false;
             }
 
         }
@@ -97,7 +114,7 @@ public class ObjectiveLevel1 : MonoBehaviour
         checking = true;
         if (gameObject.GetComponent<ShipController>().refueling && gameObject.GetComponent<ShipController>().hasLanded)
         {
-            yield return new WaitForSeconds(3f);       
+            yield return new WaitForSeconds(1f);       
             safetyCheck = true;
             checking = false;
         }
@@ -107,4 +124,20 @@ public class ObjectiveLevel1 : MonoBehaviour
             safetyCheck = false;
         }
     }
+
+    IEnumerator DisableDelayed(GameObject target)
+    {
+        target.GetComponent<AudioSource>().Play();
+        yield return new WaitForSeconds(0.5f);
+        target.SetActive(false);
+        playOnce = false;
+    }
+
+    IEnumerator LevelText(TextMeshPro titleText)
+    {
+        titleText.text = "Level 1: Testflight";
+        yield return new WaitForSeconds(3f);
+        titleText.text = " ";
+    }
+
 }

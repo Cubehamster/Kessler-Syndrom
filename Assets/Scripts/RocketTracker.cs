@@ -6,7 +6,7 @@ public class RocketTracker : MonoBehaviour
 {
     private GameObject rocket;
     private Camera rocketCamera;
-    private float zoomLevel = 5f;
+    private float zoomLevel = 6f;
 
 
 
@@ -35,7 +35,7 @@ public class RocketTracker : MonoBehaviour
         {
             zoomLevel += zoomChangeAmount * Time.deltaTime *0.1f;
         }
-        zoomLevel = Mathf.Clamp(zoomLevel, -0.5f, 10f);
+        zoomLevel = Mathf.Clamp(zoomLevel, -0.5f, 7f);
         rocketCamera.orthographicSize = zoomLevel;
     }
 

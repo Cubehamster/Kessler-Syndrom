@@ -18,7 +18,7 @@ public class ShipController : MonoBehaviour
 
     //boost parameters
     private float boostPower = 1f;
-    private bool boosterEnabled = true;
+    private bool boosterEnabled = false;
 
     //orbital mechanic constants
     private float gravitationalconstant = 0.008f;
@@ -58,7 +58,7 @@ public class ShipController : MonoBehaviour
     private GameObject fracturedRocketModel;
     [SerializeField] public GameObject rocketModel;
     private bool hasCrashed = false;
-    public bool hasLanded = false;
+    public bool hasLanded = true;
     public bool refueling = false;
     private bool performOnesForCrash = true;
 
@@ -77,8 +77,8 @@ public class ShipController : MonoBehaviour
     private Transform mainCamera;
     private Camera rocketCamera;
     private float zoomLevel = 5f;
-    private float zoomDamp = 5.0f;
-    private float cameraRefocusSpeed = 0.125f;
+    private float zoomDamp = 3.0f;
+    private float cameraRefocusSpeed = 0.175f;
 
     //laser parameters
     private GameObject laser;
@@ -102,6 +102,8 @@ public class ShipController : MonoBehaviour
 
     void Start()
     {
+        StartCoroutine(StartDelay());
+
         //find important objects in scene
         mainCamera = GameObject.FindWithTag("MainCamera").transform;
         forcefieldCollider = GameObject.Find("ForcefieldCollider");
@@ -358,7 +360,7 @@ public class ShipController : MonoBehaviour
     //keeps track of what the camera should be looking at
     private void Rockettracking()
     {
-        if (hasCrashed == false && rocketExists)
+        if (hasCrashed == false && rocketExists && boosterEnabled)
         {
             CameraTracking(rocket);
         }
@@ -685,5 +687,12 @@ public class ShipController : MonoBehaviour
     public void OnTriggerExit2D(Collider2D col)
     {
         objectives.Remove(col.gameObject);
+    }
+
+    IEnumerator StartDelay()
+    {
+        boosterEnabled = false;
+        yield return new WaitForSeconds(3f);
+        boosterEnabled = true;
     }
 }

@@ -21,7 +21,6 @@ public class CollisionDetector : MonoBehaviour
             Vector2 rocketVector = transform.up;
             Vector2 colliderVector = transform.position - other.transform.position;
             impactAngle = Mathf.Abs(Vector2.Angle(rocketVector, colliderVector));
-            Debug.Log(impactAngle);
         }
         float relativespeed = 0f;
         if (other.gameObject.GetComponent<Rigidbody2D>())
