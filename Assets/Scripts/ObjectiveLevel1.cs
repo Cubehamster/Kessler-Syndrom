@@ -15,7 +15,6 @@ public class ObjectiveLevel1 : MonoBehaviour
     bool levelCompleted = false;
     bool playOnce = false;
     bool playOnce2 = false;
-    public TextMeshPro scoreText;
     public TextMeshPro missionAccomplished;
     public TextMeshPro tutorialText;
 
@@ -25,6 +24,7 @@ public class ObjectiveLevel1 : MonoBehaviour
     [SerializeField] private Material tutorialTextMat;
     bool textFade = false;
     bool zoomCheck = false;
+    bool boostCheck = false;
 
     bool textFade2 = false;
     bool startMission = false;
@@ -81,29 +81,30 @@ public class ObjectiveLevel1 : MonoBehaviour
             StartCoroutine(FadeToolTip());
         }
 
-        if (gameObject.GetComponent<ShipController>().rocketModel != null & startMission)
+        if (gameObject.GetComponent<ShipController>().rocketExists && startMission)
         {
             if (WayPointTarget_1 != null)
             {  
                 if (!WayPoint_1)
                 {
-                    scoreText.text = "Fly to Waypoint";
+                    //scoreText.text = "Fly to Waypoint";         
                 }
        
                 if ((WayPointTarget_1.position - gameObject.GetComponent<ShipController>().rocketModel.transform.position).magnitude < 0.7f && !WayPoint_1)
                 {
+                    Debug.Log("Help");
                     if (!playOnce)
                     {
                         WayPointTarget_2.gameObject.SetActive(true);
                         WayPoint_1 = true;
                         playOnce = true;
                         StartCoroutine(DisableDelayed(WayPointTarget_1.gameObject));
-                        
+                        StartCoroutine(ChangeText(missionAccomplished, "Land Safely"));
                     }                                              
                 }
             }
 
-            if (WayPointTarget_2 != null & startMission)
+            if (WayPointTarget_2 != null && startMission && WayPoint_1)
             {
                 
                 if ((WayPointTarget_2.position - gameObject.GetComponent<ShipController>().rocketModel.transform.position).magnitude < 0.7f && !WayPoint_2)
@@ -115,8 +116,7 @@ public class ObjectiveLevel1 : MonoBehaviour
                     if (safetyCheck)
                     {             
                         if (!playOnce)
-                        {
-                            Debug.Log("hello");
+                        {                   
                             WayPoint_2 = true;
                             playOnce = true;
                             StartCoroutine(DisableDelayed(WayPointTarget_2.gameObject));                
@@ -140,7 +140,7 @@ public class ObjectiveLevel1 : MonoBehaviour
         {
             if (!levelCompleted)
             {
-                WayPointTarget_1.gameObject.SetActive(true);
+                WayPointTarget_1.gameObject.SetActive(true);                
                 WayPoint_2 = false;
                 WayPointTarget_2.gameObject.SetActive(false);
                 WayPoint_1 = false;
@@ -148,21 +148,16 @@ public class ObjectiveLevel1 : MonoBehaviour
                 safetyCheck = false;
                 playOnce = false;
             }
-
-        }
-
-        if (level != null)
-        {
-
         }
 
         if (!zoomCheck && Input.mouseScrollDelta.y != 0 & startMission)
         {
             zoomCheck = true;
-            StartCoroutine(ScrollCheck(missionAccomplished));
+            StartCoroutine(ScrollCheck(missionAccomplished));  
         }
 
-
+        if (Input.GetKey(KeyCode.Mouse0) && zoomCheck)
+            StartCoroutine(BoostCheck());
 
         if (gameObject.GetComponent<ShipController>().FuelPercentage == 0 && !gameObject.GetComponent<ShipController>().hasCrashed && !gameObject.GetComponent<ShipController>().selfDestruct )
         {
@@ -188,13 +183,21 @@ public class ObjectiveLevel1 : MonoBehaviour
         {
             tutorialText.text = "(Hold Right Mouse) = Respawn";
             textFade2 = true;
+            textFade = false;
+            WayPoint_1 = false;
         }
-        else if (gameObject.GetComponent<ShipController>().FuelPercentage == 1 && !gameObject.GetComponent<ShipController>().hasCrashed)
+        else if (gameObject.GetComponent<ShipController>().respawning && boostCheck)
         {
             textFade2 = false;
+            textFade = true;
+            missionAccomplished.text = "Fly to Waypoint";
         }
+    }
 
-        Debug.Log(gameObject.GetComponent<ShipController>().hasCrashed);
+    IEnumerator BoostCheck()
+    {
+        yield return new WaitForSeconds(1f);
+        boostCheck = true;
     }
 
     IEnumerator SafetyCheck()
@@ -216,7 +219,6 @@ public class ObjectiveLevel1 : MonoBehaviour
     IEnumerator DisableDelayed(GameObject target)
     {
         target.GetComponent<AudioSource>().Play();
-        StartCoroutine(ChangeText(missionAccomplished, "Land Safely"));
         yield return new WaitForSeconds(0.5f);
         target.SetActive(false);
         playOnce = false;
@@ -242,7 +244,7 @@ public class ObjectiveLevel1 : MonoBehaviour
         gameObject.GetComponent<ShipController>().missionStart = true;
         yield return new WaitForSeconds(1.8f);
         textFade = true;
-        textFade2 = true;
+        textFade2 = true;        
         gameObject.GetComponent<ShipController>().boosterEnabled = true;
         titleText.text = "Fly to Waypoint";
         tutorialText.text = "(Left Mouse) = Thrust";

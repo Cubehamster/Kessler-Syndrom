@@ -60,7 +60,7 @@ public class ShipController : MonoBehaviour
     [HideInInspector] public bool hasCrashed = false;
     [HideInInspector] public bool hasLanded = true;
     [HideInInspector] public bool refueling = false;
-    private bool performOnesForCrash = true;
+    [HideInInspector] public bool performOnesForCrash = true;
 
     //debries lists
     public List<GameObject> fractures;
@@ -106,6 +106,7 @@ public class ShipController : MonoBehaviour
     [HideInInspector] public bool missionCompleted = true;
 
     public bool selfDestruct = false;
+    public bool respawning = false;
 
     void Awake()
     {
@@ -409,25 +410,27 @@ public class ShipController : MonoBehaviour
         {
             rocketModel.GetComponent<CollisionDetector>().hasLanded = true;
         }
-        if (Input.GetKey(KeyCode.Mouse1) && !rocketExists && hasCrashed)
+        if (Input.GetKey(KeyCode.Mouse1) && !rocketExists && hasCrashed && !respawning)
         {
-            GameObject Rocket = Instantiate(rocketPrefab, spawnLocation.position, spawnLocation.rotation);
-            Rocket.transform.parent = earth;
-            hasCrashed = false;
-            performOnesForCrash = true;
-            LoadRocketSpawningParameters(0f, 0f, true, "Rocket(Clone)");
-            //CameraTracking(rocket);
-            FuelPercentage = 1.0f;            
-            StartCoroutine(RespawnControlDelay());
+            respawning = true;               
+            StartCoroutine(RespawnCoroutine());
         }
     }
 
     //gives a 2 second delay after resapwn
-    IEnumerator RespawnControlDelay()
+    IEnumerator RespawnCoroutine()
     {
+        yield return new WaitForSeconds(0.5f);
+        GameObject Rocket = Instantiate(rocketPrefab, spawnLocation.position, spawnLocation.rotation);
+        Rocket.transform.parent = earth;
+        hasCrashed = false;
+        performOnesForCrash = true;
+        LoadRocketSpawningParameters(0f, 0f, true, "Rocket(Clone)");
+        FuelPercentage = 1.0f;
         yield return new WaitForSeconds(2f);
         boosterEnabled = true;
         selfDestruct = false;
+        respawning = false;
     }
 
     //manages the child objects of a rocket during and after crash
@@ -435,9 +438,10 @@ public class ShipController : MonoBehaviour
     {
         Destroy(ForceArrow);
         Destroy(VelocityArrow);
-        yield return new WaitForSeconds(2f);
-        rocketExists = false;
+        yield return new WaitForSeconds(1.5f);
         Destroy(rocket.gameObject);
+        rocketExists = false;
+        
     }
 
     //checks the condition of the rocket in the collisiondetector script that is on the rocket
