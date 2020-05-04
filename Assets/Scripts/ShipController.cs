@@ -18,14 +18,14 @@ public class ShipController : MonoBehaviour
 
     //boost parameters
     private float boostPower = 1f;
-    private bool boosterEnabled = false;
+    [HideInInspector] public bool boosterEnabled = false;
 
     //orbital mechanic constants
     private float gravitationalconstant = 0.008f;
     private float massEarth = 250.0f;
 
     //rocket spawning parameters
-    private bool rocketExists = false;
+    [HideInInspector] public bool rocketExists = false;
     private Transform spawnLocation;
     private Vector2 spawndirection;
 
@@ -50,16 +50,16 @@ public class ShipController : MonoBehaviour
 
     //rocketfuel parameters
     public RectTransform Fuelbar;
-    private float FuelPercentage = 1.0f;
-    private float FuelConsumptionRate = -0.02f;
-    private float RefuelingRate = 0.1f;
+    public float FuelPercentage = 1.0f;
+    private float FuelConsumptionRate = -0.03f;
+    private float RefuelingRate = 0.3f;
 
     //crash parameters
     private GameObject fracturedRocketModel;
     [SerializeField] public GameObject rocketModel;
-    private bool hasCrashed = false;
-    public bool hasLanded = true;
-    public bool refueling = false;
+    [HideInInspector] public bool hasCrashed = false;
+    [HideInInspector] public bool hasLanded = true;
+    [HideInInspector] public bool refueling = false;
     private bool performOnesForCrash = true;
 
     //debries lists
@@ -72,19 +72,20 @@ public class ShipController : MonoBehaviour
     public List<GameObject> objectives;
     public GameObject score;
     public TextMeshPro scoreText;
+    public TextMeshPro tutorialText;
 
     //camera parameters
     private Transform mainCamera;
     private Camera rocketCamera;
-    private float zoomLevel = 5f;
+    [SerializeField] public float zoomLevel = 5f;
     private float zoomDamp = 3.0f;
-    private float cameraRefocusSpeed = 0.175f;
+    private float cameraRefocusSpeed = 0.08f;
 
     //laser parameters
     private GameObject laser;
     private GameObject beamHit;
     private GameObject laserSystem;
-    private float laserFuelCost = -0.02f;
+    private float laserFuelCost = -0.03f;
     private float laserDmg = 5f;
     private float laserLength = 5.0f;
     private LayerMask raycastLayer;
@@ -100,9 +101,16 @@ public class ShipController : MonoBehaviour
     private float hpSizePower = 0.6f;
     private float hpRecoverRate = 0.02f;
 
-    void Start()
+    public Light landingLight;
+    [HideInInspector] public bool missionStart = false;
+    [HideInInspector] public bool missionCompleted = true;
+
+    public bool selfDestruct = false;
+
+    void Awake()
     {
-        StartCoroutine(StartDelay());
+        missionStart = false;
+        missionCompleted = false;
 
         //find important objects in scene
         mainCamera = GameObject.FindWithTag("MainCamera").transform;
@@ -133,15 +141,16 @@ public class ShipController : MonoBehaviour
         raycastLayer = LayerMask.GetMask("Debries", "Fractures", "ForceField", "Default");
     }
 
-    void Update()
+    void LateUpdate()
     {
+        LandingLight();
         LaserControls();
         CollisionTracker();
         Refuel();
-        HandleZoom();
         Speed();
         Respawn();
         ObjectiveTracker();
+        HandleZoom();
     }
 
     private void FixedUpdate()
@@ -151,9 +160,10 @@ public class ShipController : MonoBehaviour
         DestroyFractures();
         DebriesTracker();
         Crash();
-        Rockettracking();
         Forces();
         ForceFieldController();
+        Rockettracking();
+        TutorialText();
     }
 
     //Does all the orbital mechanics for the rocket, fractures and debries
@@ -261,11 +271,12 @@ public class ShipController : MonoBehaviour
     //handles crash and suicide
     private void Crash()
     {
-        if ((Input.GetKey(KeyCode.Mouse0) && Input.GetKey(KeyCode.Mouse1) && performOnesForCrash && FuelPercentage == 0) || (hasCrashed && performOnesForCrash))
+        if ((selfDestruct && performOnesForCrash && FuelPercentage == 0) || (hasCrashed && performOnesForCrash))
         {
             performOnesForCrash = false;
             forceFieldRestart = true;
             boosterEnabled = false;
+            hasCrashed = true;
 
             fracturedRocketModel.SetActive(true);
             fracturedRocketModel.transform.position = rocketModel.transform.position;
@@ -353,21 +364,19 @@ public class ShipController : MonoBehaviour
         {
             zoomLevel += zoomChangeAmount * (1f + zoomLevel / 10f) * (1f + zoomLevel / 10f) * Time.deltaTime * 0.2f;
         }
-        zoomLevel = Mathf.Clamp(zoomLevel, 1f, 200f);
+        zoomLevel = Mathf.Clamp(zoomLevel, 0.5f, 40f);
         rocketCamera.orthographicSize = Mathf.Lerp(rocketCamera.orthographicSize, zoomLevel, zoomDamp * Time.deltaTime);
     }
 
     //keeps track of what the camera should be looking at
     private void Rockettracking()
     {
-        if (hasCrashed == false && rocketExists && boosterEnabled)
-        {
+        if (!hasCrashed && rocketExists && missionStart && !missionCompleted)
             CameraTracking(rocket);
-        }
-        else if (!rocketExists && performOnesForCrash)
-        {
+        else if((!rocketExists && performOnesForCrash))    
             StartCoroutine(CameraSwitchEarth());
-        }
+        else if(rocketExists && missionStart && missionCompleted)
+            StartCoroutine(EndSwitchEarth());
 
     }
 
@@ -375,6 +384,13 @@ public class ShipController : MonoBehaviour
     IEnumerator CameraSwitchEarth()
     {
         yield return new WaitForSeconds(3f);
+        CameraTracking(earth);
+    }
+
+    IEnumerator EndSwitchEarth()
+    {
+        yield return new WaitForSeconds(0.5f);
+        missionStart = false;
         CameraTracking(earth);
     }
 
@@ -393,15 +409,15 @@ public class ShipController : MonoBehaviour
         {
             rocketModel.GetComponent<CollisionDetector>().hasLanded = true;
         }
-        if (Input.GetKey(KeyCode.Mouse1) && rocketExists == false)
+        if (Input.GetKey(KeyCode.Mouse1) && !rocketExists && hasCrashed)
         {
             GameObject Rocket = Instantiate(rocketPrefab, spawnLocation.position, spawnLocation.rotation);
             Rocket.transform.parent = earth;
             hasCrashed = false;
             performOnesForCrash = true;
             LoadRocketSpawningParameters(0f, 0f, true, "Rocket(Clone)");
-            CameraTracking(rocket);
-            FuelPercentage = 1.0f;
+            //CameraTracking(rocket);
+            FuelPercentage = 1.0f;            
             StartCoroutine(RespawnControlDelay());
         }
     }
@@ -411,6 +427,7 @@ public class ShipController : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
         boosterEnabled = true;
+        selfDestruct = false;
     }
 
     //manages the child objects of a rocket during and after crash
@@ -418,7 +435,7 @@ public class ShipController : MonoBehaviour
     {
         Destroy(ForceArrow);
         Destroy(VelocityArrow);
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(2f);
         rocketExists = false;
         Destroy(rocket.gameObject);
     }
@@ -426,7 +443,7 @@ public class ShipController : MonoBehaviour
     //checks the condition of the rocket in the collisiondetector script that is on the rocket
     private void CollisionTracker()
     {
-        if (rocketExists)
+        if (rocketExists && !selfDestruct)
         {
             hasCrashed = rocketModel.GetComponent<CollisionDetector>().hasCrashed;
             hasLanded = rocketModel.GetComponent<CollisionDetector>().hasLanded;
@@ -476,8 +493,10 @@ public class ShipController : MonoBehaviour
     //handles the camera tracking smoothly for a given target
     private void CameraTracking(Transform target)
     {
+        Vector3 velocity = Vector3.zero;
         Vector3 targetCamera = new Vector3(target.transform.position.x, target.transform.position.y, -10);
-        Vector3 smoothedPosition = Vector3.Lerp(mainCamera.position, targetCamera, cameraRefocusSpeed);
+        Vector3 smoothedPosition = Vector3.SmoothDamp(mainCamera.position, targetCamera, ref velocity, cameraRefocusSpeed);
+        //Vector3 smoothedPosition = Vector3.Lerp(mainCamera.position, targetCamera, cameraRefocusSpeed);
         mainCamera.position = smoothedPosition;
     }
 
@@ -663,7 +682,7 @@ public class ShipController : MonoBehaviour
     {
         if (rocketExists)
         {
-            if ((rocket.position - earth.position).magnitude > 25f)
+            if ((rocket.position - earth.position).magnitude > 15f)
             {
                 rocket.parent = transform;
             }
@@ -689,10 +708,28 @@ public class ShipController : MonoBehaviour
         objectives.Remove(col.gameObject);
     }
 
-    IEnumerator StartDelay()
+    public void LandingLight()
     {
-        boosterEnabled = false;
-        yield return new WaitForSeconds(3f);
-        boosterEnabled = true;
+        landingLight.GetComponent<Light>().intensity = 2 * Mathf.Sin(Time.time * 5) + 2;
+        if (boosterEnabled && FuelPercentage > 0.99f)
+        {
+            landingLight.GetComponent<Light>().color = new Color(0, 1, 0);
+        }
+        else if (boosterEnabled && FuelPercentage < 0.99f)
+        {
+            landingLight.GetComponent<Light>().color = new Color(1, 0.5f, 0);
+        }
+        else
+        {
+            landingLight.GetComponent<Light>().color = new Color(1, 0, 0);
+        }
+    }
+
+    private void TutorialText()
+    {
+        if(!hasCrashed && tutorialText != null && boosterEnabled)
+        {
+            tutorialText.gameObject.transform.position = new Vector3(rocket.position.x, rocket.position.y + 0.8f, tutorialText.gameObject.transform.position.z);
+        }
     }
 }

@@ -31,7 +31,7 @@ public class CollisionDetector : MonoBehaviour
                 hasCrashed = true;
             }
         }
-        else if (speed < 0.55f && (other.collider.tag == "Planet" || other.collider.tag == "Refuel") && impactAngle < 100)
+        else if (speed < 0.55f && (other.collider.tag == "Planet" || other.collider.tag == "Refuel") && impactAngle < 93)
         {
             if(other.collider.tag == "Planet" || other.collider.tag == "Refuel")
             {

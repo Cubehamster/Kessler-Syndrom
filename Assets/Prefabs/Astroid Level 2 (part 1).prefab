@@ -160,6 +160,7 @@ MonoBehaviour:
   triggerDestruction: 0
   destructionComplete: 0
   intensity: 0
+  mat: {fileID: 0}
   hitpoints: 0
   hpSizePower: 0.9
 --- !u!82 &5765329012282901087
@@ -425,6 +426,7 @@ MonoBehaviour:
   triggerDestruction: 0
   destructionComplete: 0
   intensity: 0
+  mat: {fileID: 0}
   hitpoints: 0
   hpSizePower: 0.9
 --- !u!50 &6549206794948100275
@@ -457,10 +459,11 @@ AudioSource:
   m_GameObject: {fileID: 1514518706074296437}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 24300002, guid: 0bc8ffd5bca82ce408b9108f79d3a38c,
+    type: 2}
   m_audioClip: {fileID: 8300000, guid: 5f2c70c61fd024a459bdcb5d284bcc40, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.173
+  m_Volume: 0.1
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -633,6 +636,7 @@ MonoBehaviour:
   triggerDestruction: 0
   destructionComplete: 0
   intensity: 0
+  mat: {fileID: 0}
   hitpoints: 0
   hpSizePower: 0.9
 --- !u!50 &5378471705904697959
@@ -665,10 +669,11 @@ AudioSource:
   m_GameObject: {fileID: 6946600151314288276}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 24300002, guid: 0bc8ffd5bca82ce408b9108f79d3a38c,
+    type: 2}
   m_audioClip: {fileID: 8300000, guid: 5f2c70c61fd024a459bdcb5d284bcc40, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 0.173
+  m_Volume: 0.1
   m_Pitch: 1
   Loop: 0
   Mute: 0
