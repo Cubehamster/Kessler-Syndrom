@@ -10,7 +10,6 @@ public class LevelManager : MonoBehaviour
     private void Awake()
     {
         isLoaded = false;
-        level = 1;
     }
 
     private void Update()

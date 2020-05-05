@@ -13,7 +13,7 @@ public class CollisionDetector : MonoBehaviour
     private Vector3 velocityBeforePhysicsUpdate;
     float impactAngle = 0;
 
-    private void OnCollisionStay2D(Collision2D other)
+    private void OnCollisionEnter2D(Collision2D other)
     {
 
         if (other.collider.tag == "Planet" || other.collider.tag == "Refuel")
@@ -31,8 +31,8 @@ public class CollisionDetector : MonoBehaviour
                 hasCrashed = true;
             }
         }
-        else if (speed < 0.55f && (other.collider.tag == "Planet" || other.collider.tag == "Refuel") && impactAngle < 93)
-        {
+        else if ((speed < 0.45f && impactAngle < 93) && (other.collider.tag == "Planet" || other.collider.tag == "Refuel"))
+        {     
             if(other.collider.tag == "Planet" || other.collider.tag == "Refuel")
             {
                 hasLanded = true;
@@ -46,6 +46,11 @@ public class CollisionDetector : MonoBehaviour
         {
             hasCrashed = true;
         }
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        
     }
 
     private void OnCollisionExit2D(Collision2D other)

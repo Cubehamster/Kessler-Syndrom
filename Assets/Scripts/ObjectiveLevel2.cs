@@ -6,6 +6,7 @@ using TMPro;
 public class ObjectiveLevel2 : MonoBehaviour
 {
     LevelManager level;
+    public Transform Spawnpoint;
     public Transform WayPointTarget_1;
     public Transform WayPointTarget_2;
     bool WayPoint_1 = false;
@@ -24,7 +25,7 @@ public class ObjectiveLevel2 : MonoBehaviour
     [SerializeField] private Material tutorialTextMat;
     bool textFade = false;
     bool zoomCheck = false;
-    bool boostCheck = false;
+    bool laserCheck = false;
 
     bool textFade2 = false;
     bool startMission = false;
@@ -150,8 +151,8 @@ public class ObjectiveLevel2 : MonoBehaviour
             }
         }
 
-        if (Input.GetKey(KeyCode.Mouse0) && zoomCheck)
-            StartCoroutine(BoostCheck());
+        if (Input.GetKey(KeyCode.Mouse1) && zoomCheck)
+            StartCoroutine(LaserCheck());
 
         if (gameObject.GetComponent<ShipController>().FuelPercentage == 0 && !gameObject.GetComponent<ShipController>().hasCrashed && !gameObject.GetComponent<ShipController>().selfDestruct)
         {
@@ -180,18 +181,19 @@ public class ObjectiveLevel2 : MonoBehaviour
             textFade = false;
             WayPoint_1 = false;
         }
-        else if (gameObject.GetComponent<ShipController>().respawning && boostCheck)
+        else if (gameObject.GetComponent<ShipController>().respawning && laserCheck)
         {
             textFade2 = false;
             textFade = true;
-            missionAccomplished.text = "Fly to Waypoint";
+            missionAccomplished.text = "Orbit the Planet Twice";
         }
     }
 
-    IEnumerator BoostCheck()
+    IEnumerator LaserCheck()
     {
         yield return new WaitForSeconds(1f);
-        boostCheck = true;
+        laserCheck = true;
+        textFade2 = false;
     }
 
     IEnumerator SafetyCheck()
@@ -224,13 +226,21 @@ public class ObjectiveLevel2 : MonoBehaviour
         textFade = true;
         yield return new WaitForSeconds(3);
         textFade = false;
-        yield return new WaitForSeconds(1.5f);
         startMission = true;
+        StartCoroutine(ScrollCheck(missionAccomplished));
+    }
+
+    IEnumerator ScrollCheck(TextMeshPro titleText)
+    {
+        yield return new WaitForSeconds(1.8f);
         gameObject.GetComponent<ShipController>().missionStart = true;
         yield return new WaitForSeconds(1.8f);
         textFade = true;
+        textFade2 = true;
         gameObject.GetComponent<ShipController>().boosterEnabled = true;
         titleText.text = "Orbit the Planet Twice";
+        tutorialText.text = "(Right Mouse) = Laser";
+        zoomCheck = true;
     }
 
     IEnumerator ChangeText(TextMeshPro titleText, string newText)
