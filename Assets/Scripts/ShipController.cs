@@ -173,14 +173,17 @@ public class ShipController : MonoBehaviour
         if (rocketExists)
         {
             OrbitalBodyGravity(earth, massEarth, rocket, rocketRB);
+            AtmosphericDrag(rocket.transform, rocketRB);
         }
         for (int i = 0; i < fractures.Count; i++)
         {
             OrbitalBodyGravity(earth, massEarth, fractures[i].transform, fracturesRB[i]);
+            AtmosphericDrag(fractures[i].transform, fracturesRB[i]);
         }
         for (int i = 0; i < debries.Count; i++)
         {
             OrbitalBodyGravity(earth, massEarth, debries[i].transform, debriesRB[i]);
+            AtmosphericDrag(debries[i].transform, debriesRB[i]);
         }
     }
 
@@ -735,5 +738,24 @@ public class ShipController : MonoBehaviour
         {
             tutorialText.gameObject.transform.position = new Vector3(rocket.position.x, rocket.position.y + 0.8f, tutorialText.gameObject.transform.position.z);
         }
+    }
+
+    private void AtmosphericDrag(Transform objectPos, Rigidbody2D objectRB)
+    {
+        float height;
+
+        height = (objectPos.transform.position - earth.transform.position).magnitude;
+        if (height < 5)
+        {
+            objectRB.drag = -0.33f * height + 1.66f;
+            if(objectPos.tag == "Debries" || objectPos.tag == "Fracture")
+            objectPos.gameObject.GetComponent<CollisionImpactSound>().hitpoints -= objectRB.drag * objectRB.velocity.magnitude * 0.25f * Mathf.Sqrt(objectRB.mass);
+        }
+        else
+        {
+            objectRB.drag = 0;
+        }
+
+
     }
 }

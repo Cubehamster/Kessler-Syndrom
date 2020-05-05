@@ -7,9 +7,7 @@ public class DDOL : MonoBehaviour
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
-        Debug.Log("DDOL " + gameObject.name);
-
-        UnityEngine.SceneManagement.SceneManager.LoadScene("level_1");
+        Debug.Log("DDOL " + gameObject.name);        
     }
 
 }
