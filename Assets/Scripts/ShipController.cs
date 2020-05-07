@@ -518,18 +518,84 @@ public class ShipController : MonoBehaviour
     //controls the players raycast laserbeam
     private void Laserbeam()
     {
+        if (rocketExists)
+        {
+            Vector3 laserSpawn = laser.transform.position;
+            Vector2 laserAim = new Vector2(mousePosition.x - laserSpawn.x, mousePosition.y - laserSpawn.y);
+            Vector3 laserFire = new Vector3(mousePosition.x, mousePosition.y, laserSpawn.z);
+            Vector3 laserStepLocation;
+            float laserStepHeight;
+            float laserSpawnHeight;
+
+            Debug.DrawRay(laserSpawn, laserAim, Color.blue);
+
+            LineRenderer LaserLineRenderer = laser.GetComponent<LineRenderer>();
+
+            LaserLineRenderer.SetPosition(0, laserSpawn);
+            laserLength = 5;
+            laserSpawnHeight = (laserSpawn - earth.transform.position).magnitude;
+
+            laserStepLocation = laserSpawn + Vector3.Normalize(laserFire - laserSpawn) * laserLength;
+            laserStepHeight = (laserStepLocation - earth.transform.position).magnitude;
+            if(laserSpawnHeight < 4.9f && laserStepHeight >= 4.9f)
+            {
+                float laserAngle = (4.9f - laserSpawnHeight) / (laserStepHeight - laserSpawnHeight)  * Vector2.Angle(new Vector2(laserSpawn.x-earth.transform.position.x, laserSpawn.y - earth.transform.position.y), new Vector2(laserStepLocation.x - earth.transform.position.x, laserStepLocation.y - earth.transform.position.y));
+                laserLength = (4.9f - laserSpawnHeight) / (laserStepHeight - laserSpawnHeight) * laserLength * (1 + ((5f - laserSpawnHeight)/5) * Mathf.Sin(Mathf.PI * 2f * laserAngle / 180));
+                if (laserLength > 5)
+                    laserLength = 5;
+                Debug.Log(laserAngle + " + " + (1 + ((5f - laserSpawnHeight) / 5) * Mathf.Sin(Mathf.PI * 8f * laserAngle / 360)));
+            }
+
+
+
+            RaycastHit2D hit = Physics2D.Raycast(laserSpawn, Vector3.Normalize(laserAim), laserLength, raycastLayer);
+            if (hit)
+            {
+                if (hit.collider)
+                {
+                    beamHit.SetActive(true);
+                    beamHit.transform.position = hit.point;
+                    LaserLineRenderer.SetPosition(1, hit.point);
+                    if (hit.collider.tag == "Debries")
+                    {
+                        hit.collider.gameObject.GetComponent<CollisionImpactSound>().hitpoints -= laserDmg * Time.deltaTime;
+                    }
+                }
+            }
+            else
+            {
+                LaserLineRenderer.SetPosition(1, laserSpawn + Vector3.Normalize(laserFire - laserSpawn) * laserLength);
+                if (laserLength < 5)
+                {
+                    beamHit.transform.position = laserSpawn + Vector3.Normalize(laserFire - laserSpawn) * laserLength;
+                    beamHit.SetActive(true);
+                }
+                else
+                    beamHit.SetActive(false);
+            }
+        }
+
         //if (rocketExists)
         //{
         //    Vector3 laserSpawn = laser.transform.position;
         //    Vector2 laserAim = new Vector2(mousePosition.x - laserSpawn.x, mousePosition.y - laserSpawn.y);
         //    Vector3 laserFire = new Vector3(mousePosition.x, mousePosition.y, laserSpawn.z);
+        //    Vector3 laserStepLocation = laserSpawn;
+        //    float laserStepHeight;
+        //    float laserDragModifier = 1;
+        //    bool hasHit;
+
+        //    hasHit = false;
 
         //    Debug.DrawRay(laserSpawn, laserAim, Color.blue);
 
         //    LineRenderer LaserLineRenderer = laser.GetComponent<LineRenderer>();
 
         //    LaserLineRenderer.SetPosition(0, laserSpawn);
-        //    RaycastHit2D hit = Physics2D.Raycast(laserSpawn, Vector3.Normalize(laserAim), laserLength, raycastLayer);
+        //    RaycastHit2D hit;
+        //    int steps = 50;
+
+        //    hit = Physics2D.Raycast(laserStepLocation, Vector3.Normalize(laserAim), Mathf.Pow((1 - laserDragModifier), 10) * laserLength, raycastLayer);
         //    if (hit)
         //    {
         //        if (hit.collider)
@@ -543,78 +609,35 @@ public class ShipController : MonoBehaviour
         //            }
         //        }
         //    }
-        //    else
-        //    {
-        //        LaserLineRenderer.SetPosition(1, laserSpawn + Vector3.Normalize(laserFire - laserSpawn) * laserLength);
-        //        beamHit.SetActive(false);
-        //    }
-        //}
 
-        if (rocketExists)
-        {
-            Vector3 laserSpawn = laser.transform.position;
-            Vector2 laserAim = new Vector2(mousePosition.x - laserSpawn.x, mousePosition.y - laserSpawn.y);
-            Vector3 laserFire = new Vector3(mousePosition.x, mousePosition.y, laserSpawn.z);
-            Vector3 laserStepLocation = laserSpawn;
-            float laserStepHeight;
-            float laserDragModifier = 1;
-            bool hasHit;
-            
-            hasHit = false;
 
-            Debug.DrawRay(laserSpawn, laserAim, Color.blue);
+        //    //for (int i = 0; i < steps; i++)
+        //    //{                
+        //    //    if(!hasHit)
+        //    //    {
+        //    //        laserStepHeight = (laserStepLocation - earth.transform.position).magnitude;
 
-            LineRenderer LaserLineRenderer = laser.GetComponent<LineRenderer>();
+        //    //        if (!hasHit)
+        //    //        {
+        //    //            Debug.Log(laserStepLocation + " + " + laserSpawn + " + " + Vector3.Normalize(laserFire - laserSpawn) * laserStep + " + " + laserFire + " + " + +i);
+        //    //            if (laserStepHeight < 4.9f && laserStepHeight > 4.8f && (rocket.transform.position - earth.transform.position).magnitude < 4.9f)
+        //    //            {
+        //    //                hasHit = true;
+        //    //                laserStepLocation = laserSpawn + 4.85f * Vector3.Normalize(laserFire - laserSpawn);
+        //    //                beamHit.transform.position = laserStepLocation;
+        //    //                beamHit.SetActive(true);
+        //    //            }
+        //    //            else
+        //    //            {
+        //    //                laserStepLocation = laserStepLocation + 0.1f * Vector3.Normalize(laserFire - laserSpawn);
+        //    //                beamHit.SetActive(false);
+        //    //            }
 
-            LaserLineRenderer.SetPosition(0, laserSpawn);
-            RaycastHit2D hit; 
+        //    //            LaserLineRenderer.SetPosition(1, laserStepLocation);
+        //    //        }
+        //    //    }
 
-            int steps = 50;
-            for (int i = 0; i < steps; i++)
-            {                
-                if(!hasHit)
-                {
-                    laserStepHeight = (laserStepLocation - earth.transform.position).magnitude;
-                    if(laserStepHeight < 5)
-                    {
-                        laserDragModifier = -0.2f * laserStepHeight + 1;
-                    }
-                    else
-                    {
-                        laserDragModifier = 0;
-                    }
-                    
-                    hit = Physics2D.Raycast(laserStepLocation, Vector3.Normalize(laserAim), Mathf.Pow((1 - laserDragModifier), 10) * 0.1f, raycastLayer);
-                    if (hit)
-                    {
-                        if (hit.collider)
-                        {
-                            beamHit.SetActive(true);
-                            beamHit.transform.position = hit.point;
-                            LaserLineRenderer.SetPosition(1, hit.point);
-                            if (hit.collider.tag == "Debries")
-                            {
-                                hit.collider.gameObject.GetComponent<CollisionImpactSound>().hitpoints -= laserDmg * Time.deltaTime;
-                            }
-                            hasHit = true;
-                        }
-                    }
-                    else
-                    {
-                        if (!hasHit)
-                        {
-
-                            Debug.Log(laserStepLocation + " + " + laserSpawn + " + " + Vector3.Normalize(laserFire - laserSpawn) * laserStep + " + " + laserFire + " + " + +i);
-                            laserStepLocation = laserStepLocation + Mathf.Pow((1 - laserDragModifier),10) * 0.1f * Vector3.Normalize(laserFire - laserSpawn);
-                            LaserLineRenderer.SetPosition(1, laserStepLocation);
-
-                            beamHit.SetActive(false);
-                        }
-                    }
-                }
-              
-            }
-        }
+        //    //}
 
         //if (rocketExists)
         //{
