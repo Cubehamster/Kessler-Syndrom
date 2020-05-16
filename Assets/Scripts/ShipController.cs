@@ -10,7 +10,7 @@ public class ShipController : MonoBehaviour
 
     //reference markers
     private Transform astroids;
-    private Transform earth;
+    [HideInInspector] public Transform earth;
 
     //rocket markers
     private Transform rocket;
@@ -90,6 +90,7 @@ public class ShipController : MonoBehaviour
     [SerializeField] private float laserLength = 5.0f;
     [SerializeField] private float laserStep = 0.1f;
     private LayerMask raycastLayer;
+    private LayerMask raycastAtmosphereLayer;
 
     //forcefield parameters
     private GameObject forcefieldCollider;
@@ -108,9 +109,15 @@ public class ShipController : MonoBehaviour
 
     public bool selfDestruct = false;
     public bool respawning = false;
+    private bool endSequence = false;
+
+    private GameObject DDOL;
+    public Animator FadeOutAnimator;
 
     void Awake()
     {
+        DDOL = GameObject.Find("__app");
+
         missionStart = false;
         missionCompleted = false;
 
@@ -141,9 +148,10 @@ public class ShipController : MonoBehaviour
 
         //setup mask for laser
         raycastLayer = LayerMask.GetMask("Debries", "Fractures", "ForceField", "Default");
+        raycastAtmosphereLayer = LayerMask.GetMask("Atmosphere");
     }
-
-    void LateUpdate()
+       
+    public void Update()
     {
         LandingLight();
         LaserControls();
@@ -153,6 +161,16 @@ public class ShipController : MonoBehaviour
         Respawn();
         ObjectiveTracker();
         HandleZoom();
+
+        if (Input.GetKey("v"))
+        {
+            Debug.Log(FadeOutAnimator.runtimeAnimatorController.name);
+            Debug.Log(FadeOutAnimator.parameterCount);
+            Debug.Log(FadeOutAnimator.GetParameter(0).name);
+            //FadeOut();
+            FadeOutAnimator.SetTrigger("FadeOut");
+            
+        }
     }
 
     private void FixedUpdate()
@@ -376,12 +394,15 @@ public class ShipController : MonoBehaviour
     //keeps track of what the camera should be looking at
     private void Rockettracking()
     {
-        if (!hasCrashed && rocketExists && missionStart && !missionCompleted)
+        if (!hasCrashed && rocketExists && missionStart && !missionCompleted && !endSequence)
             CameraTracking(rocket);
-        else if((!rocketExists && performOnesForCrash))    
+        else if((!rocketExists && performOnesForCrash) && !endSequence)    
             StartCoroutine(CameraSwitchEarth());
         else if(rocketExists && missionStart && missionCompleted)
+        {
             StartCoroutine(EndSwitchEarth());
+            
+        }
 
     }
 
@@ -397,6 +418,16 @@ public class ShipController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         missionStart = false;
         CameraTracking(earth);
+   
+        yield return new WaitForSeconds(5f);
+        if (!endSequence)
+        {
+            endSequence = true;
+            FadeOut();
+            yield return new WaitForSeconds(1f);
+            DDOL.GetComponents<LevelManager>()[0].level += 1;
+            DDOL.GetComponents<LevelManager>()[0].isLoaded = false;
+        }        
     }
 
     //function that handles fuelchange based on ability
@@ -537,16 +568,15 @@ public class ShipController : MonoBehaviour
 
             laserStepLocation = laserSpawn + Vector3.Normalize(laserFire - laserSpawn) * laserLength;
             laserStepHeight = (laserStepLocation - earth.transform.position).magnitude;
-            if(laserSpawnHeight < 4.9f && laserStepHeight >= 4.9f)
-            {
-                float laserAngle = (4.9f - laserSpawnHeight) / (laserStepHeight - laserSpawnHeight)  * Vector2.Angle(new Vector2(laserSpawn.x-earth.transform.position.x, laserSpawn.y - earth.transform.position.y), new Vector2(laserStepLocation.x - earth.transform.position.x, laserStepLocation.y - earth.transform.position.y));
-                laserLength = (4.9f - laserSpawnHeight) / (laserStepHeight - laserSpawnHeight) * laserLength * (1 + ((5f - laserSpawnHeight)/5) * Mathf.Sin(Mathf.PI * 2f * laserAngle / 180));
-                if (laserLength > 5)
-                    laserLength = 5;
-                Debug.Log(laserAngle + " + " + (1 + ((5f - laserSpawnHeight) / 5) * Mathf.Sin(Mathf.PI * 8f * laserAngle / 360)));
+            if(laserSpawnHeight < 4.7f)
+            {    
+                RaycastHit2D hit2 = Physics2D.Raycast(laserSpawn + 8 * Vector3.Normalize(laserAim), -Vector3.Normalize(laserAim), 20, raycastAtmosphereLayer);
+                if (hit2)
+                {
+                    if (hit2.collider)
+                        laserLength = (hit2.point - new Vector2(laserSpawn.x, laserSpawn.y)).magnitude;
+                }
             }
-
-
 
             RaycastHit2D hit = Physics2D.Raycast(laserSpawn, Vector3.Normalize(laserAim), laserLength, raycastLayer);
             if (hit)
@@ -568,117 +598,12 @@ public class ShipController : MonoBehaviour
                 if (laserLength < 5)
                 {
                     beamHit.transform.position = laserSpawn + Vector3.Normalize(laserFire - laserSpawn) * laserLength;
-                    beamHit.SetActive(true);
+                    beamHit.SetActive(true); 
                 }
                 else
                     beamHit.SetActive(false);
             }
         }
-
-        //if (rocketExists)
-        //{
-        //    Vector3 laserSpawn = laser.transform.position;
-        //    Vector2 laserAim = new Vector2(mousePosition.x - laserSpawn.x, mousePosition.y - laserSpawn.y);
-        //    Vector3 laserFire = new Vector3(mousePosition.x, mousePosition.y, laserSpawn.z);
-        //    Vector3 laserStepLocation = laserSpawn;
-        //    float laserStepHeight;
-        //    float laserDragModifier = 1;
-        //    bool hasHit;
-
-        //    hasHit = false;
-
-        //    Debug.DrawRay(laserSpawn, laserAim, Color.blue);
-
-        //    LineRenderer LaserLineRenderer = laser.GetComponent<LineRenderer>();
-
-        //    LaserLineRenderer.SetPosition(0, laserSpawn);
-        //    RaycastHit2D hit;
-        //    int steps = 50;
-
-        //    hit = Physics2D.Raycast(laserStepLocation, Vector3.Normalize(laserAim), Mathf.Pow((1 - laserDragModifier), 10) * laserLength, raycastLayer);
-        //    if (hit)
-        //    {
-        //        if (hit.collider)
-        //        {
-        //            beamHit.SetActive(true);
-        //            beamHit.transform.position = hit.point;
-        //            LaserLineRenderer.SetPosition(1, hit.point);
-        //            if (hit.collider.tag == "Debries")
-        //            {
-        //                hit.collider.gameObject.GetComponent<CollisionImpactSound>().hitpoints -= laserDmg * Time.deltaTime;
-        //            }
-        //        }
-        //    }
-
-
-        //    //for (int i = 0; i < steps; i++)
-        //    //{                
-        //    //    if(!hasHit)
-        //    //    {
-        //    //        laserStepHeight = (laserStepLocation - earth.transform.position).magnitude;
-
-        //    //        if (!hasHit)
-        //    //        {
-        //    //            Debug.Log(laserStepLocation + " + " + laserSpawn + " + " + Vector3.Normalize(laserFire - laserSpawn) * laserStep + " + " + laserFire + " + " + +i);
-        //    //            if (laserStepHeight < 4.9f && laserStepHeight > 4.8f && (rocket.transform.position - earth.transform.position).magnitude < 4.9f)
-        //    //            {
-        //    //                hasHit = true;
-        //    //                laserStepLocation = laserSpawn + 4.85f * Vector3.Normalize(laserFire - laserSpawn);
-        //    //                beamHit.transform.position = laserStepLocation;
-        //    //                beamHit.SetActive(true);
-        //    //            }
-        //    //            else
-        //    //            {
-        //    //                laserStepLocation = laserStepLocation + 0.1f * Vector3.Normalize(laserFire - laserSpawn);
-        //    //                beamHit.SetActive(false);
-        //    //            }
-
-        //    //            LaserLineRenderer.SetPosition(1, laserStepLocation);
-        //    //        }
-        //    //    }
-
-        //    //}
-
-        //if (rocketExists)
-        //{
-        //    Vector3 laserSpawn = laser.transform.position;
-        //    Vector2 laserAim = new Vector2(mousePosition.x - laserSpawn.x, mousePosition.y - laserSpawn.y);
-        //    Vector3 laserFire = new Vector3(mousePosition.x, mousePosition.y, laserSpawn.z);
-        //    Vector3 laserStepLocation = laserSpawn;
-
-        //    Debug.DrawRay(laserSpawn, laserAim, Color.blue);
-
-        //    LineRenderer LaserLineRenderer = laser.GetComponent<LineRenderer>();
-
-        //    LaserLineRenderer.SetPosition(0, laserSpawn);
-        //    int steps = 20;
-        //    for (int i = 0; i < steps; i++)
-        //    {
-        //        RaycastHit2D hit = Physics2D.Raycast(laserStepLocation, Vector3.Normalize(laserAim), laserStep, raycastLayer);
-        //        if (hit)
-        //        {
-        //            if (hit.collider)
-        //            {
-        //                beamHit.SetActive(true);
-        //                beamHit.transform.position = hit.point;
-        //                LaserLineRenderer.SetPosition(1, hit.point);
-        //                if (hit.collider.tag == "Debries")
-        //                {
-        //                    hit.collider.gameObject.GetComponent<CollisionImpactSound>().hitpoints -= laserDmg * Time.deltaTime;
-        //                }
-        //            }
-        //        }
-        //        else
-        //        {
-
-        //            laserStepLocation = laserStepLocation + Vector3.Normalize(laserFire - laserStepLocation) * laserStep;
-        //            LaserLineRenderer.SetPosition(1, laserStepLocation);
-        //            beamHit.SetActive(false);
-        //        }
-
-        //    }
-        //}
-
     }
 
     //determines how the laser is controlled
@@ -687,7 +612,7 @@ public class ShipController : MonoBehaviour
         //!refueling 
         if (rocketExists)
         {
-            if (Input.GetKey(KeyCode.Mouse1) && FuelPercentage > 0 && FuelPercentage <= 1 && !hasCrashed)
+            if (Input.GetKey(KeyCode.Mouse1) && FuelPercentage > 0 && FuelPercentage <= 1 && !hasCrashed && !missionCompleted)
             {
                 laserSystem.SetActive(true);
                 Laserbeam();
@@ -892,5 +817,10 @@ public class ShipController : MonoBehaviour
         }
 
 
+    }
+
+    private void FadeOut()
+    {
+        FadeOutAnimator.SetBool("FadeOut", true);
     }
 }

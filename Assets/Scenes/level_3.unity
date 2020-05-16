@@ -97,7 +97,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 0
+  m_UseShadowmask: 1
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -19499,7 +19499,7 @@ GameObject:
   - component: {fileID: 1301585039}
   - component: {fileID: 1301585041}
   - component: {fileID: 1301585038}
-  - component: {fileID: 1301585042}
+  - component: {fileID: 1301585040}
   m_Layer: 14
   m_Name: GameManager
   m_TagString: Untagged
@@ -19591,6 +19591,26 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 23.137264
+--- !u!114 &1301585040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1301585035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5ae00cf31e5b3346be8844ac694bf1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  WayPointTarget_1: {fileID: 857390500}
+  WayPointTarget_2: {fileID: 1988382570}
+  missionAccomplished: {fileID: 2018131664}
+  tutorialText: {fileID: 786321206}
+  alpha: 0
+  alpha2: 0
+  missionAccomplishTextMat: {fileID: 0}
+  tutorialTextMat: {fileID: 0}
 --- !u!114 &1301585041
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19603,28 +19623,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd3f66fb3bdf3f142a2c26c37484e6b2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1301585042
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1301585035}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 43f0e337362d1e94aa1af9c1f4ca5a62, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Spawnpoint: {fileID: 1570376864}
-  WayPointTarget_1: {fileID: 857390500}
-  WayPointTarget_2: {fileID: 1988382570}
-  SC: {fileID: 1301585037}
-  missionAccomplished: {fileID: 2018131664}
-  tutorialText: {fileID: 786321206}
-  alpha: 0
-  alpha2: 0
-  missionAccomplishTextMat: {fileID: 0}
-  tutorialTextMat: {fileID: 0}
 --- !u!1001 &1302402744
 PrefabInstance:
   m_ObjectHideFlags: 0
