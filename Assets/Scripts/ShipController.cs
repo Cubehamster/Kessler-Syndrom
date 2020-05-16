@@ -51,7 +51,7 @@ public class ShipController : MonoBehaviour
     //rocketfuel parameters
     public RectTransform Fuelbar;
     public float FuelPercentage = 1.0f;
-    private float FuelConsumptionRate = -0.03f;
+    private float FuelConsumptionRate = -0.05f;
     private float RefuelingRate = 0.3f;
 
     //crash parameters
@@ -85,7 +85,7 @@ public class ShipController : MonoBehaviour
     private GameObject laser;
     private GameObject beamHit;
     private GameObject laserSystem;
-    private float laserFuelCost = -0.03f;
+    private float laserFuelCost = -0.01f;
     private float laserDmg = 4f;
     [SerializeField] private float laserLength = 5.0f;
     [SerializeField] private float laserStep = 0.1f;
@@ -112,11 +112,14 @@ public class ShipController : MonoBehaviour
     private bool endSequence = false;
 
     private GameObject DDOL;
-    public Animator FadeOutAnimator;
+    private Animator FadeOutAnimator;
+    private GameObject Menu;
 
     void Awake()
     {
         DDOL = GameObject.Find("__app");
+        FadeOutAnimator = DDOL.GetComponentInChildren<Animator>();
+        Menu = DDOL.transform.GetChild(0).GetChild(0).gameObject;
 
         missionStart = false;
         missionCompleted = false;
@@ -143,9 +146,6 @@ public class ShipController : MonoBehaviour
         //initialize all the astroids start velocity, angular velocity, rigidbody mass and hitpoints
         StartLevel();
 
-        //get access to score
-        scoreText = score.GetComponent<TextMeshPro>();
-
         //setup mask for laser
         raycastLayer = LayerMask.GetMask("Debries", "Fractures", "ForceField", "Default");
         raycastAtmosphereLayer = LayerMask.GetMask("Atmosphere");
@@ -161,16 +161,7 @@ public class ShipController : MonoBehaviour
         Respawn();
         ObjectiveTracker();
         HandleZoom();
-
-        if (Input.GetKey("v"))
-        {
-            Debug.Log(FadeOutAnimator.runtimeAnimatorController.name);
-            Debug.Log(FadeOutAnimator.parameterCount);
-            Debug.Log(FadeOutAnimator.GetParameter(0).name);
-            //FadeOut();
-            FadeOutAnimator.SetTrigger("FadeOut");
-            
-        }
+        BringUpMenu();
     }
 
     private void FixedUpdate()
@@ -423,10 +414,12 @@ public class ShipController : MonoBehaviour
         if (!endSequence)
         {
             endSequence = true;
+            Cursor.visible = false;
             FadeOut();
             yield return new WaitForSeconds(1f);
             DDOL.GetComponents<LevelManager>()[0].level += 1;
             DDOL.GetComponents<LevelManager>()[0].isLoaded = false;
+            
         }        
     }
 
@@ -612,7 +605,7 @@ public class ShipController : MonoBehaviour
         //!refueling 
         if (rocketExists)
         {
-            if (Input.GetKey(KeyCode.Mouse1) && FuelPercentage > 0 && FuelPercentage <= 1 && !hasCrashed && !missionCompleted)
+            if (Input.GetKey(KeyCode.Mouse1) && FuelPercentage > 0 && FuelPercentage <= 1 && !hasCrashed && !missionCompleted && missionStart)
             {
                 laserSystem.SetActive(true);
                 Laserbeam();
@@ -801,13 +794,15 @@ public class ShipController : MonoBehaviour
         float height;
 
         height = (objectPos.transform.position - earth.transform.position).magnitude;
-        if (height < 5)
-        {       
-            objectRB.drag = -0.2f * height + 1;
+        if (height < 4.7f)
+        {            
             if(objectPos.tag == "Debries" || objectPos.tag == "Fracture")
-            objectPos.gameObject.GetComponent<CollisionImpactSound>().hitpoints -= objectRB.drag * objectRB.velocity.magnitude * 0.4f * Mathf.Sqrt(objectRB.mass);
+            {
+                objectRB.drag = (-0.04f * Mathf.Pow(height, 2) + 1);
+                objectPos.gameObject.GetComponent<CollisionImpactSound>().hitpoints -= objectRB.drag * objectRB.velocity.magnitude * 0.4f * Mathf.Sqrt(objectRB.mass);
+            }
             if (objectPos.tag == "Player")
-                laserLength = Mathf.Pow((1 - objectRB.drag), 2) * 5.0f;
+                objectRB.drag = (-0.04f * Mathf.Pow(height, 2) + 1) * Mathf.Pow(1.5f * objectRB.velocity.magnitude, 2);
         }
         else
         {
@@ -822,5 +817,24 @@ public class ShipController : MonoBehaviour
     private void FadeOut()
     {
         FadeOutAnimator.SetBool("FadeOut", true);
+    }
+
+    private void BringUpMenu()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape) && !Menu.activeSelf && DDOL.GetComponents<LevelManager>()[0].level != 0)
+        {
+            Menu.SetActive(true);
+            Time.timeScale = 0f;
+            scoreText.gameObject.SetActive(false);
+            tutorialText.gameObject.SetActive(true);
+        }            
+        else if (Input.GetKeyDown(KeyCode.Escape) && Menu.activeSelf && DDOL.GetComponents<LevelManager>()[0].level != 0)
+        {
+            Menu.SetActive(false);
+            Time.timeScale = 1f;
+            scoreText.gameObject.SetActive(false);
+            tutorialText.gameObject.SetActive(true);
+        }
+            
     }
 }

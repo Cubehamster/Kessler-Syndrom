@@ -79,7 +79,7 @@ public class CollisionImpactSound : MonoBehaviour
         if (other.gameObject.GetComponent<Rigidbody2D>())
         {
             relativespeed = Vector2.Distance(other.gameObject.GetComponent<Rigidbody2D>().velocity, velocityBeforePhysicsUpdate);
-            hitpoints -= 4f * Mathf.Pow(relativespeed, 3f) * other.gameObject.GetComponent<Rigidbody2D>().mass / (transform.gameObject.GetComponent<Rigidbody2D>().mass + other.gameObject.GetComponent<Rigidbody2D>().mass);
+            hitpoints -= 8f * Mathf.Pow(relativespeed, 3f) * other.gameObject.GetComponent<Rigidbody2D>().mass / (transform.gameObject.GetComponent<Rigidbody2D>().mass + other.gameObject.GetComponent<Rigidbody2D>().mass);
         }
         else
         {

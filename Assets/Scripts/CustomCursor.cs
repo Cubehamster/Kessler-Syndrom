@@ -10,5 +10,6 @@ public class CustomCursor : MonoBehaviour
     void Awake()
     {
         Cursor.SetCursor(cursorArrow, Vector2.zero, CursorMode.ForceSoftware);
+        Cursor.visible = true;
     }
 }

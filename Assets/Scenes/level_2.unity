@@ -6823,12 +6823,6 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 7795914918297381313}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &480492247 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 7795914918375133974, guid: 168a19af2463afb4d8bb237fa328945f,
-    type: 3}
-  m_PrefabInstance: {fileID: 7795914918297381313}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &483928604 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8654586604795204230, guid: 27a4899544c4b934dab09b3ea480450a,
@@ -8364,7 +8358,8 @@ AudioSource:
   m_GameObject: {fileID: 543886779}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 24300002, guid: 97b5bbffd08dfbd42b453e0171eaa14c,
+    type: 2}
   m_audioClip: {fileID: 8300000, guid: d8293ba6c238a1c488d55eeaac56a929, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.173
@@ -12508,8 +12503,7 @@ AudioSource:
   m_GameObject: {fileID: 857390499}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 24300002, guid: 0bc8ffd5bca82ce408b9108f79d3a38c,
-    type: 2}
+  OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 44a353d927a52f14baabce77e0ee86d2, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 0.2
@@ -19551,7 +19545,7 @@ MonoBehaviour:
   debriesRB: []
   objectives: []
   score: {fileID: 1497438340}
-  scoreText: {fileID: 0}
+  scoreText: {fileID: 2018131664}
   tutorialText: {fileID: 786321206}
   zoomLevel: 5
   laserLength: 5
@@ -19561,7 +19555,6 @@ MonoBehaviour:
   missionCompleted: 1
   selfDestruct: 0
   respawning: 0
-  FadeOutAnimator: {fileID: 480492247}
 --- !u!114 &1301585038
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30959,8 +30952,7 @@ AudioSource:
   m_GameObject: {fileID: 1988382569}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 24300002, guid: 0bc8ffd5bca82ce408b9108f79d3a38c,
-    type: 2}
+  OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 44a353d927a52f14baabce77e0ee86d2, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 0.2

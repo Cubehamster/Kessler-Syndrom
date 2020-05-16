@@ -56,22 +56,22 @@ public class ObjectiveLevel1 : MonoBehaviour
     {
         if(textFade)
         {
-            alpha = Mathf.Lerp(alpha, 1, 0.035f);
+            alpha = Mathf.Lerp(alpha, 1, 0.045f);
             missionAccomplishTextMat.SetColor("_FaceColor", new Color(1f, 1f, 1f, alpha));
         }
         else
         {
-            alpha = Mathf.Lerp(alpha, 0, 0.035f);
+            alpha = Mathf.Lerp(alpha, 0, 0.045f);
             missionAccomplishTextMat.SetColor("_FaceColor", new Color(1f, 1f, 1f, alpha));
         }
         if (textFade2)
         {
-            alpha2 = Mathf.Lerp(alpha2, 1, 0.025f);
+            alpha2 = Mathf.Lerp(alpha2, 1, 0.045f);
             tutorialTextMat.SetColor("_FaceColor", new Color(1f, 1f, 1f, alpha2));
         }
         else
         {
-            alpha2 = Mathf.Lerp(alpha2, 0, 0.035f);
+            alpha2 = Mathf.Lerp(alpha2, 0, 0.045f);
             tutorialTextMat.SetColor("_FaceColor", new Color(1f, 1f, 1f, alpha2));
         }
 
@@ -239,10 +239,10 @@ public class ObjectiveLevel1 : MonoBehaviour
 
     IEnumerator ScrollCheck(TextMeshPro titleText)
     {
-        yield return new WaitForSeconds(1.8f);
+        yield return new WaitForSeconds(1f);
         textFade = false;
         gameObject.GetComponent<ShipController>().missionStart = true;
-        yield return new WaitForSeconds(1.8f);
+        yield return new WaitForSeconds(1f);
         textFade = true;
         textFade2 = true;        
         gameObject.GetComponent<ShipController>().boosterEnabled = true;
